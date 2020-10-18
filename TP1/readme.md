@@ -1,5 +1,7 @@
 # Mapello
 
+![Mapello](https://nestorgames.com/gameimages/mapello_mid.jpg)
+
 ## Descrição:
 
 O mapello é uma variante do reversi no qual é adicionado algumas peças extras em comparação com o original, sendo elas as Walls (peças que servem como as paredes do tabuleiro e não podem ser colocadas peças em cima), Bonuses (peças que dão mais pontos a quem os captura) e Jokers (peças normais que pertencem ao jogador atual).
