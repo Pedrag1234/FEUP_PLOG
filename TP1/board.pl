@@ -21,19 +21,19 @@ printRep(L):-
 
 /* creates a 10x10 empty board*/
 createEmptyBoard(Board,N):-
-   createBoard(Board,N,0).
+   createBoard(Board,N).
 
-createBoard(_,N,Lines).
-createBoard([FirstRow|OtherRows],N,Lines):-
-    Lines1 is (Lines + 1),
-    createBoardLine(FirstRow,N),
-    createBoard(OtherRows,N,Lines1).
+createBoard([],0).
+createBoard([Head|Tail],N):-
+    createRow(Head,10),
+    N1 is (N - 1),
+    createBoard(Tail,N1).
 
-createBoardLine(_,0).
-createBoardLine([Elem1|OtherElem],N):-
-    Elem1 = none,
-    N1 is N - 1,
-    createBoardLine(OtherElem,N1).
+createRow([],0).
+createRow([Head|Tail],Line):-
+    Head = none,
+    Line1 is (Line - 1),
+    createRow(Tail,Line1).
 
 
 printBoard(Board, N):-
@@ -46,15 +46,17 @@ printRows([FirstElem|OtherElem], N):-
     printRowNumber(N),
     N1 is N-1,
     printRow(FirstElem),
-    nl,
     printRowSep,
     printRows(OtherElem,N1).
 
     
-printRow(_, 0).
+printRow([]):-
+    nl.
 printRow([FirstElem|OtherElem]):-
     getRep(FirstElem,Label),
+    printColumnSep,
     printRep(Label),
+    printColumnSep,
     printRow(OtherElem).
 
 printRowNumber(N):-
@@ -62,7 +64,7 @@ printRowNumber(N):-
     printColumnSep.
 
 printRowSep:-
-    write('|----|----|----|----|----|----|----|----|----|----|'),
+    write('----|----|----|----|----|----|----|----|----|----|'),
     nl.
 
 printHeader:-
@@ -74,5 +76,5 @@ printColumnSep:-
 
 testBoard:-
     createEmptyBoard(B0,10),
-    printBoard(Board,10).
+    printBoard(B0,10).
 
