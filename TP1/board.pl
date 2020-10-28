@@ -15,9 +15,9 @@ getRep(_,_):-
     fail.
 
 printRep(L):-
-    printColumnSep,
+    write(' '),
     write(L),
-    printColumnSep.
+    write(' ').
 
 /* creates a 10x10 empty board*/
 createEmptyBoard(Board,N):-
@@ -43,7 +43,8 @@ printBoard(Board, N):-
 
 printRows(_, 0).
 printRows([FirstElem|OtherElem], N):-
-    printRowNumber(N),
+    Number is 10 - N,
+    printRowNumber(Number),
     N1 is N-1,
     printRow(FirstElem),
     printRowSep,
@@ -54,21 +55,21 @@ printRow([]):-
     nl.
 printRow([FirstElem|OtherElem]):-
     getRep(FirstElem,Label),
-    printColumnSep,
     printRep(Label),
     printColumnSep,
     printRow(OtherElem).
 
 printRowNumber(N):-
+    write(' '),
     write(N),
-    printColumnSep.
+    write(' |').
 
 printRowSep:-
-    write('----|----|----|----|----|----|----|----|----|----|'),
+    write('   |---|---|---|---|---|---|---|---|---|---|'),
     nl.
 
 printHeader:-
-    write('|--0-|--1-|--2-|--3-|--4-|--5-|--6-|--7-|--8-|--9-|'), nl,
+    write('     0   1   2   3   4   5   6   7   8   9'), nl,
     printRowSep.
 
 printColumnSep:-
