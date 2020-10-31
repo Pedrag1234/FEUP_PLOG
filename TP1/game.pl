@@ -1,15 +1,19 @@
 :- use_module(library(lists)).
 :- use_module(library(between)).
 :- use_module(library(random)).
+:- use_module(library(system)).
 :- include('board.pl').
 
 startGame:-
+    now(N),
+    Seed is ((N mod 30265) + 1),
+    setrand(random(Seed, Seed, Seed, N)),
     createEmptyBoard(B0,10),
     setInitialPieces(B0,B1),
     printBoard(B1,10),
-    jokerSetupPhase(B1, 8, B2),
+    jokerSetupPhase(B1, 0, B2),
     write('Performing random Wall and Bonus pieces placement'), nl,
-    wallSetupPhase(B2, 8, B3),
+    wallSetupPhase(B2, 40, B3),
     bonusSetupPhase(B3, 8, B4),
     printBoard(B4, 10),
     playGame(B4, 2, _),
@@ -36,10 +40,10 @@ readEnter(Char, [Char|Rest]) :-
         readEnter(Char1, Rest).
 
 readCoordinates(PieceStr, X, Y):-
-    write(PieceStr), write(' X Coordinate:'),
-    readInput(Xinput), nl,
-    write(PieceStr), write(' Y Coordinate:'),
-    readInput(Yinput), nl,
+    write(PieceStr), write(' X Coordinate: '),
+    readInput(Xinput),
+    write(PieceStr), write(' Y Coordinate: '),
+    readInput(Yinput),
     nth0(0, Xinput, Xchar), 
     nth0(0, Yinput, Ychar),
     number_chars(X, [Xchar]), number_chars(Y, [Ychar]).
@@ -91,8 +95,7 @@ bonusSetupPhase(Board, 0, Board).
 bonusSetupPhase(Board, N, NewBoard):-
     N > 0,
     N1 is N - 1,
-    placeBonus(Board, TempBoard),
-    bonusSetupPhase(TempBoard, N1, NewBoard).
+    (placeBonus(Board, TempBoard) -> bonusSetupPhase(TempBoard, N1, NewBoard) ; bonusSetupPhase(Board, N, NewBoard)).
 
 placeDiscPlayer1(Board, NewBoard):-
     readCoordinates('Disc', X, Y),
@@ -107,13 +110,15 @@ placeJoker(Board, NewBoard):-
     (validateJokerInput(X,Y) -> setPiece(Board,X,Y,joker,NewBoard) ; write('Jokers must be placed on the outer border, input again\n'), nl, placeJoker(Board,NewBoard)).
 
 placeWall(Board, NewBoard):-
-     random(1, 8, X),
-     random(1, 8, Y),
-     (checkPlace(Board,X,Y) == true -> setPiece(Board, X, Y, wall, NewBoard) ; fail).
+     random(1, 9, X),
+     random(1, 9, Y), !,
+     checkPlace(Board,X,Y),
+     setPiece(Board, X, Y, wall, NewBoard).
 
 placeBonus(Board, NewBoard):-
-     random(1, 8, X),
-     random(1, 8, Y),
+     random(1, 9, X),
+     random(1, 9, Y),
+     checkPlace(Board,X,Y),
      setPiece(Board, X, Y, bonus, NewBoard).
     
     

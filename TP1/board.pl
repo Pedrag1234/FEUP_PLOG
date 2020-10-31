@@ -50,8 +50,9 @@ setInitialPieces(Board,NewBoard):-
     setInitialPlayerPieces(Board,NewBoard).
 
 printBoard(Board, N):-
+    nl,
     printHeader,
-    printRows(Board, N).
+    printRows(Board, N), nl.
 
 printRows(_, 0).
 printRows([FirstElem|OtherElem], N):-
