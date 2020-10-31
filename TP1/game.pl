@@ -8,8 +8,8 @@ startGame:-
     setInitialPieces(B0,B1),
     printBoard(B1,10),
     jokerSetupPhase(B1, 8, B2),
-    wallSetupPhase(B2, 8, B3),
-    bonusSetupPhase(B3, 8, B4),
+    %wallSetupPhase(B2, 8, B3),
+    %bonusSetupPhase(B3, 8, B4),
     printBoard(B4, 10).
 
 readInput(Input):-
@@ -53,7 +53,10 @@ validateJokerInput(Xinput,Yinput):-
 
 checkPlace(Board, X, Y) :-
     getPiece(X, Y, Board, Piece),
-    Piece = '.'; fail.
+    getRep(Piece,Label),
+    if(Label == '.', true, fail).
+
+    
     
 jokerSetupPhase(Board, 0, Board).
 jokerSetupPhase(Board, N, NewBoard):-
@@ -72,13 +75,12 @@ wallSetupPhase(Board, 0, Board).
 wallSetupPhase(Board, N, NewBoard):-
     N > 0,
     N1 is N - 1,
-    placeWall(Board, TempBoard),
-    wallSetupPhase(TempBoard, N1, NewBoard).
+    (placeWall(Board, TempBoard) -> wallSetupPhase(TempBoard, N1, NewBoard) ; wallSetupPhase(Board, N, NewBoard)).
 
 placeWall(Board, NewBoard):-
      random(1, 8, X),
      random(1, 8, Y),
-     setPiece(Board, X, Y, wall, NewBoard).
+     (checkPlace(Board,X,Y) == true -> setPiece(Board, X, Y, wall, NewBoard) ; fail).
 
 bonusSetupPhase(Board, 0, Board).
 bonusSetupPhase(Board, N, NewBoard):-
