@@ -35,27 +35,28 @@ createRow([Head|Tail],Line):-
     Line1 is (Line - 1),
     createRow(Tail,Line1).
 
+getPiece(Row, Column, Board, Piece) :-
+        nth0(Row, Board, Row),
+        nth0(Column, Row, Piece).
+
 setPiece(Board,Col,Row,Piece,NewBoard):-
     nth0(Row,Board,RowLine,TempBoard),
     nth0(Col,RowLine,_,TempRow),
     nth0(Col,NewRow,Piece,TempRow),
     nth0(Row,NewBoard,NewRow,TempBoard).
     
-setInitalPlayerPieces(Board,NewBoard):-
+setInitialPlayerPieces(Board,NewBoard):-
     setPiece(Board,4,4,white,B0),
     setPiece(B0,5,5,white,B1),
     setPiece(B1,4,5,black,B2),
     setPiece(B2,5,4,black,NewBoard).
 
-
 setInitialPieces(Board,NewBoard):-
-    setInitalPlayerPieces(Board,NewBoard).
-
+    setInitialPlayerPieces(Board,NewBoard).
 
 printBoard(Board, N):-
     printHeader,
     printRows(Board, N).
-
 
 printRows(_, 0).
 printRows([FirstElem|OtherElem], N):-
@@ -65,7 +66,6 @@ printRows([FirstElem|OtherElem], N):-
     printRow(FirstElem),
     printRowSep,
     printRows(OtherElem,N1).
-
     
 printRow([]):-
     nl.
@@ -91,10 +91,4 @@ printHeader:-
 printColumnSep:-
     write('|').
 
-
-
-testBoard:-
-    createEmptyBoard(B0,10),
-    setInitialPieces(B0,B1),
-    printBoard(B1,10).
 
