@@ -35,16 +35,22 @@ readCoordinates(PieceStr, X, Y):-
 %    write('\nInvalid input! Try Again\n'), nl,
 %    readCoordinates(PieceStr, X, Y).
 %
-%checkInput('Joker', 0, Y) :-
-%       between(0, 9, Y).
-%checkInput('Joker', 9, Y) :-
-%        between(0, 9, Y).
-%checkInput('Joker', X, 0) :-
-%        between(0, 9, X).
-%checkInput('Joker', X, 9) :-
-%        between(0, 9, X).
+
+checkInput('Joker', 0, X, Y) :-
+    between(0, 9, X),
+    (Y == 0; Y == 9).
+
+checkInput('Joker', 0, X, Y) :-
+    between(0, 9, Y),
+    (X == 0; X == 9).
+
 %checkInput('Joker', _, _) :-
 %    write('Jokers must be placed on the outer border, input again\n'), nl, fail.
+
+validateJokerInput(Xinput,Yinput):-
+    checkInput('Joker',0,Xinput,Yinput).
+
+
 checkPlace(Board, X, Y) :-
     getPiece(X, Y, Board, Piece),
     Piece = '.'; fail.
@@ -58,8 +64,9 @@ jokerSetupPhase(Board, N, NewBoard):-
     jokerSetupPhase(TempBoard, N1, NewBoard).
 
 placeJoker(Board, NewBoard):-
-     catch(readCoordinates('Joker', X, Y), _, fail),
-     setPiece(Board, X, Y, joker, NewBoard).
+    readCoordinates('Joker', X, Y),
+    (validateJokerInput(X,Y) -> setPiece(Board,X,Y,joker,NewBoard) ; write('Jokers must be placed on the outer border, input again\n'), nl, placeJoker(Board,NewBoard)).
+     
 
 wallSetupPhase(Board, 0, Board).
 wallSetupPhase(Board, N, NewBoard):-
