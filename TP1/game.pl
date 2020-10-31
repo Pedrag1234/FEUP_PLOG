@@ -1,4 +1,6 @@
 :- use_module(library(lists)).
+:- use_module(library(between)).
+:- use_module(library(random)).
 :- include('board.pl').
 
 startGame:-
@@ -7,7 +9,8 @@ startGame:-
     printBoard(B1,10),
     jokerSetupPhase(B1, 8, B2),
     wallSetupPhase(B2, 8, B3),
-    bonusSetupPhase(B3, 8, B4).
+    bonusSetupPhase(B3, 8, B4),
+    printBoard(B4, 10).
 
 readInput(Input):-
         get_char(Char),
@@ -21,11 +24,30 @@ readEnter(Char, [Char|Rest]) :-
 readCoordinates(PieceStr, X, Y):-
     write(PieceStr), write(' X Coordinate:'),
     readInput(Xinput), nl,
-    write('Piece Y Coordinate:'),
+    write(PieceStr), write(' Y Coordinate:'),
     readInput(Yinput), nl,
     nth0(0, Xinput, Xchar), 
-    nth0(0, Yinput, Ychar), 
+    nth0(0, Yinput, Ychar),
     number_chars(X, [Xchar]), number_chars(Y, [Ychar]).
+
+% trying to prevent invalid inputs, not finished
+%readCoordinates(PieceStr, X, Y):-
+%    write('\nInvalid input! Try Again\n'), nl,
+%    readCoordinates(PieceStr, X, Y).
+%
+%checkInput('Joker', 0, Y) :-
+%       between(0, 9, Y).
+%checkInput('Joker', 9, Y) :-
+%        between(0, 9, Y).
+%checkInput('Joker', X, 0) :-
+%        between(0, 9, X).
+%checkInput('Joker', X, 9) :-
+%        between(0, 9, X).
+%checkInput('Joker', _, _) :-
+%    write('Jokers must be placed on the outer border, input again\n'), nl, fail.
+checkPlace(Board, X, Y) :-
+    getPiece(X, Y, Board, Piece),
+    Piece = '.'; fail.
     
 jokerSetupPhase(Board, 0, Board).
 jokerSetupPhase(Board, N, NewBoard):-
@@ -44,11 +66,11 @@ wallSetupPhase(Board, N, NewBoard):-
     N > 0,
     N1 is N - 1,
     placeWall(Board, TempBoard),
-    printBoard(TempBoard, 10),
     wallSetupPhase(TempBoard, N1, NewBoard).
 
 placeWall(Board, NewBoard):-
-     catch(readCoordinates('Wall', X, Y), _, fail),
+     random(1, 8, X),
+     random(1, 8, Y),
      setPiece(Board, X, Y, wall, NewBoard).
 
 bonusSetupPhase(Board, 0, Board).
@@ -56,11 +78,11 @@ bonusSetupPhase(Board, N, NewBoard):-
     N > 0,
     N1 is N - 1,
     placeBonus(Board, TempBoard),
-    printBoard(TempBoard, 10),
     bonusSetupPhase(TempBoard, N1, NewBoard).
 
 placeBonus(Board, NewBoard):-
-     catch(readCoordinates('Bonus', X, Y), _, fail),
+     random(1, 8, X),
+     random(1, 8, Y),
      setPiece(Board, X, Y, bonus, NewBoard).
     
     

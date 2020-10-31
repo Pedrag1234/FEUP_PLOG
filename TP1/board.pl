@@ -7,10 +7,7 @@ getRep(black,'B').
 getRep(wall,'G').
 getRep(joker,'J').
 getRep(bonus,'P').
-getRep(_,_):-
-    write('Unknown representation'),
-    nl,
-    fail.
+getRep(_,_).
 
 printRep(L):-
     write(' '),
