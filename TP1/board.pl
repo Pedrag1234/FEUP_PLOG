@@ -4,11 +4,9 @@
 getRep(none,'.').
 getRep(white,'W').
 getRep(black,'B').
-getRep(gray,'G').
-getRep(yellow,'Y').
-getRep(b_yellow,'BY').
-getRep(w_yellow,'WY').
+getRep(wall,'G').
 getRep(joker,'J').
+getRep(bonus,'P').
 getRep(_,_):-
     write('Unknown representation'),
     nl,
