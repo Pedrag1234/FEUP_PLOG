@@ -8,10 +8,24 @@ startGame:-
     setInitialPieces(B0,B1),
     printBoard(B1,10),
     jokerSetupPhase(B1, 8, B2),
+    write('Performing random Wall and Bonus pieces placement'), nl,
     wallSetupPhase(B2, 8, B3),
     bonusSetupPhase(B3, 8, B4),
-    printBoard(B4, 10).
+    printBoard(B4, 10),
+    playGame(B4, 2, _),
+    write('Game Over').
 
+playGame(_, 0, _).
+playGame(Board, Turns, NewBoard):-
+    write('Player 1 Turn'), nl,
+    placeDiscPlayer1(Board, TempBoard),
+    printBoard(TempBoard, 10),
+    write('Player 2 Turn'), nl,
+    placeDiscPlayer2(TempBoard, TempBoard2),
+    printBoard(TempBoard2, 10),
+    NewTurns is Turns - 1,
+    playGame(TempBoard2, NewTurns, NewBoard).
+    
 readInput(Input):-
         get_char(Char),
         readEnter(Char, Input).
@@ -36,20 +50,23 @@ readCoordinates(PieceStr, X, Y):-
 %    readCoordinates(PieceStr, X, Y).
 %
 
-checkInput('Joker', 0, X, Y) :-
+checkInput('Joker', X, Y) :-
     between(0, 9, X),
     (Y == 0; Y == 9).
 
-checkInput('Joker', 0, X, Y) :-
+checkInput('Joker', X, Y) :-
     between(0, 9, Y),
     (X == 0; X == 9).
 
-%checkInput('Joker', _, _) :-
-%    write('Jokers must be placed on the outer border, input again\n'), nl, fail.
+checkInput('Disc', X, Y) :-
+    between(1, 8, X),
+    between(1, 8, Y).
 
 validateJokerInput(Xinput,Yinput):-
-    checkInput('Joker',0,Xinput,Yinput).
+    checkInput('Joker',Xinput,Yinput).
 
+validateDiscInput(Xinput,Yinput):-
+    checkInput('Disc',Xinput,Yinput).
 
 checkPlace(Board, X, Y) :-
     getPiece(X, Y, Board, Piece),
@@ -62,12 +79,7 @@ jokerSetupPhase(Board, N, NewBoard):-
     placeJoker(Board, TempBoard),
     printBoard(TempBoard, 10),
     jokerSetupPhase(TempBoard, N1, NewBoard).
-
-placeJoker(Board, NewBoard):-
-    readCoordinates('Joker', X, Y),
-    (validateJokerInput(X,Y) -> setPiece(Board,X,Y,joker,NewBoard) ; write('Jokers must be placed on the outer border, input again\n'), nl, placeJoker(Board,NewBoard)).
      
-
 wallSetupPhase(Board, 0, Board).
 wallSetupPhase(Board, N, NewBoard):-
     N > 0,
@@ -75,17 +87,29 @@ wallSetupPhase(Board, N, NewBoard):-
     placeWall(Board, TempBoard),
     wallSetupPhase(TempBoard, N1, NewBoard).
 
-placeWall(Board, NewBoard):-
-     random(1, 8, X),
-     random(1, 8, Y),
-     setPiece(Board, X, Y, wall, NewBoard).
-
 bonusSetupPhase(Board, 0, Board).
 bonusSetupPhase(Board, N, NewBoard):-
     N > 0,
     N1 is N - 1,
     placeBonus(Board, TempBoard),
     bonusSetupPhase(TempBoard, N1, NewBoard).
+
+placeDiscPlayer1(Board, NewBoard):-
+    readCoordinates('Disc', X, Y),
+    (validateDiscInput(X,Y) -> setPiece(Board,X,Y,black,NewBoard) ; write('Discs must be placed in the inner 8x8 square, input again\n'), nl, placeDiscPlayer1(Board,NewBoard)).
+
+placeDiscPlayer2(Board, NewBoard):-
+    readCoordinates('Disc', X, Y),
+    (validateDiscInput(X,Y) -> setPiece(Board,X,Y,white,NewBoard) ; write('Discs must be placed in the inner 8x8 square, input again\n'), nl, placeDiscPlayer2(Board,NewBoard)).
+
+placeJoker(Board, NewBoard):-
+    readCoordinates('Joker', X, Y),
+    (validateJokerInput(X,Y) -> setPiece(Board,X,Y,joker,NewBoard) ; write('Jokers must be placed on the outer border, input again\n'), nl, placeJoker(Board,NewBoard)).
+
+placeWall(Board, NewBoard):-
+     random(1, 8, X),
+     random(1, 8, Y),
+     setPiece(Board, X, Y, wall, NewBoard).
 
 placeBonus(Board, NewBoard):-
      random(1, 8, X),
