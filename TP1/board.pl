@@ -31,8 +31,8 @@ createRow([Head|Tail],Line):-
     createRow(Tail,Line1).
 
 getPiece(Row, Column, Board, Piece) :-
-        nth0(Row, Board, Row),
-        nth0(Column, Row, Piece).
+    nth0(Row, Board, RowLine, _),
+    nth0(Column, RowLine, Piece, _), !.
 
 setPiece(Board,Col,Row,Piece,NewBoard):-
     nth0(Row,Board,RowLine,TempBoard),
