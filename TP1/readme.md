@@ -35,7 +35,7 @@ O mapello é uma variante do reversi no qual é adicionado algumas peças extras
 O estado do tabuleiro está guardado numa lista de listas (10 x 10) em qual cada posição vai guardar a peça que está aí. No jogador iremos guardar a sua pontuação ,tendo em conta que esta diminui ou aumenta de acordo com as peças que captura e perde, e se tinha passado a ronda anterior.
 
 ### Peças
-As peças são representadas da seguinte forma:
+As peças na lista de listas são representadas da seguinte forma:
 - white : peças brancas
 - black : peças pretas
 - none : espaço vazio
@@ -46,7 +46,7 @@ As peças são representadas da seguinte forma:
 
 ### Estado Inicial
 
-No estado inicial temos um tabuleiro N * N gerado pela função na qual preenchemos todos os espaços da lista com 'none' e  que em seguida vão inicializar as posições das peças iniciais (2 peças brancas, 2 peças pretas, 8 paredes, 8 jokers, 8 bonus).
+No estado inicial temos um tabuleiro N * N gerado pela função na qual preenchemos todos os espaços da lista com 'none' , que em seguida vamos inicializar as posições das peças iniciais (2 peças brancas, 2 peças pretas, 8 paredes, 8 jokers, 8 bonus).
 
 ```prolog
 % play
@@ -60,13 +60,20 @@ play:-
     bonusSetupPhase(B2, 8, B3),
     jokerSetupPhase(B3, 8, B4),
     playGame(B4, 0, 16, _).
-```
- 
+ ```
+#### Setting Random Walls and Bonus
+![Walls and Bonus](https://github.com/Pedrag1234/FEUP_PLOG/blob/master/TP1/img/RandomwallsandBonus.PNG)
+
+#### Setting Jokers 
+![Jokers](https://github.com/Pedrag1234/FEUP_PLOG/blob/master/TP1/img/jokers.PNG)
 
 ### Estado Intermédio
 
 O estado intermédio do jogo é quando ambos os jogadores conseguem fazer jogadas ou pelo menos um deles consegue jogar, nesta fase vamos adicionando peças brancas e pretas que por sua vez capturam peças dos inimigos ou bonus tornado-as da mesma cor.
 Esta fase ainda não está completamente implementada, pois ainda é necessário realizar a validação da jogada e a mudança da cor das peças.
+
+#### Play Loop
+![Play](https://github.com/Pedrag1234/FEUP_PLOG/blob/master/TP1/img/play.PNG)
 
 ### Estado Final
 O jogo entra no estado final quando:
@@ -120,7 +127,7 @@ printRow([FirstElem|OtherElem]):-
     printRow(OtherElem).
 ```
 
-Cada peça é representada da seguinte forma:
+Cada peça é representada no tabuleiro da seguinte forma:
 - 'W' : peças brancas
 - 'B' : peças pretas
 - '.' : espaço vazio
