@@ -52,14 +52,13 @@ No estado inicial temos um tabuleiro N * N gerado pela função na qual preenche
 % play
 % Starts a new game
 play:-
-    initRandom,
-    createEmptyBoard(B0),
-    setInitialPieces(B0,B1),
-    nl, write('Performing random Wall and Bonus pieces placement'), nl,
-    wallSetupPhase(B1, 8, B2),
-    bonusSetupPhase(B2, 8, B3),
-    jokerSetupPhase(B3, 8, B4),
-    playGame(B4, 0, 16, _).
+   initRandom,
+   initial(B0),
+   nl, write('Performing random Wall and Bonus pieces placement'), nl,
+   wallSetupPhase(B0, 8, B1),
+   bonusSetupPhase(B1, 8, B2),
+   jokerSetupPhase(B2, 8, B3),
+   playGame(B3, 0, 16, _).
  ```
 #### Setting Random Walls and Bonus
 ![Walls and Bonus](https://github.com/Pedrag1234/FEUP_PLOG/blob/master/TP1/img/RandomwallsandBonus.PNG)
@@ -81,7 +80,7 @@ O jogo entra no estado final quando:
   - Ambos os jogadores passam as sua vez.
 Ainda não foi iniciado o trabalho nesta fase, uma vez que ainda é necessário terminar a fase prévia.
 
-## Visualisação dos estados do jogo
+## Visualização dos estados do jogo
 
 A visualização do tabuleiro é feita chamando a função:
 
