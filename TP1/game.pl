@@ -15,13 +15,12 @@ initRandom:-
 % Starts a new game
 play:-
     initRandom,
-    createEmptyBoard(B0),
-    setInitialPieces(B0,B1),
+    initial(B0),
     nl, write('Performing random Wall and Bonus pieces placement'), nl,
-    wallSetupPhase(B1, 8, B2),
-    bonusSetupPhase(B2, 8, B3),
-    jokerSetupPhase(B3, 8, B4),
-    playGame(B4, 0, 16, _).
+    wallSetupPhase(B0, 8, B1),
+    bonusSetupPhase(B1, 8, B2),
+    jokerSetupPhase(B2, 8, B3),
+    playGame(B3, 0, 16, _).
 
 % display_game(+Board, +Player)
 % Displays the current game state, and announces next player turn
@@ -170,13 +169,9 @@ placeBonus(Board, NewBoard):-
 % initial
 % Default initial board state
 initial(X):-
-    initRandom,
     createEmptyBoard(B0),
     setInitialPieces(B0,B1),
-    wallSetupPhase(B1, 8, B2),
-    bonusSetupPhase(B2, 8, B3),
-    jokerSetupPhase(B3, 8, B4),
-    X = B4.
+    X = B1.
 
    
     
