@@ -2,7 +2,7 @@
 
 ![Mapello](https://nestorgames.com/gameimages/mapello_mid.jpg)
 
-## Turma 1 Grupo 5
+## Turma 1 Mapello_5
 
 ### Trabalho realizado por:
 
@@ -19,7 +19,7 @@ O mapello é uma variante do reversi no qual é adicionado algumas peças extras
 ### Regras
 
 - Apenas pode colocar uma peça por turno
-- No início do jogo, o tabuleiro começa com 4 peças no centro (Ex.: B W | W B)
+- No início do jogo, o tabuleiro começa com 4 peças no centro (Ex.: B W | W B), 8 jokers nas bordas do tabuleiro e 8 bonus e paredes no meio do tabuleiro.
 - Só pode colocar a peça se consegue capturar peças inimigas (Ex.:B W W _)
 - Se não conseguir colocar nenhuma peça passa a jogada para o próximo jogador.
 - Se os 2 jogadores passarem consecutivos o jogo acaba e ganha quem tiver mais pontos.
@@ -27,17 +27,103 @@ O mapello é uma variante do reversi no qual é adicionado algumas peças extras
 
 ### Links
 
-[Nestor](https://nestorgames.com/#mapello_detail)
+-https://nestorgames.com/#mapello_detail
+-https://cardgames.io/reversi/
 
 ## Representação de Interna do estado do Jogo
 
-O estado do tabuleiro será guardado numa lista de listas (10 x 10) em qual cada posição vai guardar a peça que está aí. O jogador apenas ira guardar a sua pontuação tendo em conta que esta diminui ou aumenta de acordo com as peças que captura e perde.
+O estado do tabuleiro está guardado numa lista de listas (10 x 10) em qual cada posição vai guardar a peça que está aí. No jogador iremos guardar a sua pontuação ,tendo em conta que esta diminui ou aumenta de acordo com as peças que captura e perde, e se tinha passado a ronda anterior.
 
 ### Peças
+As peças são representadas da seguinte forma:
+- white : peças brancas
+- black : peças pretas
+- none : espaço vazio
+- wall : parede
+- joker : joker
+- bonus : bonus
 
-- "W" : peças brancas
-- "B" : peças pretas
-- "." : espaço vazio
-- "G" : parede
-- "J" : joker
-- "P" : bonus
+
+### Estado Inicial
+
+No estado inicial temos um tabuleiro N * N gerado pela função na qual preenchemos todos os espaços da lista com 'none' e  que em seguida vão inicializar as posições das peças iniciais (2 peças brancas, 2 peças pretas, 8 paredes, 8 jokers, 8 bonus).
+
+```prolog
+% play
+% Starts a new game
+play:-
+    initRandom,
+    createEmptyBoard(B0),
+    setInitialPieces(B0,B1),
+    nl, write('Performing random Wall and Bonus pieces placement'), nl,
+    wallSetupPhase(B1, 8, B2),
+    bonusSetupPhase(B2, 8, B3),
+    jokerSetupPhase(B3, 8, B4),
+    playGame(B4, 0, 16, _).
+```
+ 
+
+### Estado Intermédio
+
+O estado intermédio do jogo é quando ambos os jogadores conseguem fazer jogadas ou pelo menos um deles consegue jogar, nesta fase vamos adicionando peças brancas e pretas que por sua vez capturam peças dos inimigos ou bonus tornado-as da mesma cor.
+Esta fase ainda não está completamente implementada, pois ainda é necessário realizar a validação da jogada e a mudança da cor das peças.
+
+### Estado Final
+O jogo entra no estado final quando:
+  - Não existem mais espaços vazios no tabuleiro.
+  - Ambos os jogadores passam as sua vez.
+Ainda não foi iniciado o trabalho nesta fase, uma vez que ainda é necessário terminar a fase prévia.
+
+## Visualisação dos estados do jogo
+
+A visualização do tabuleiro é feita chamando a função:
+
+```prolog
+% display_game(+Board, +Player)
+% Displays the current game state, and announces next player turn
+
+display_game(Board, Player):-
+    printBoard(Board),
+    write('Player '),
+    write(Player),
+    write(' Turn'), nl.
+```
+Esta função por sua vez chama a função printBoard que por sua vez vai linha a linha e depois elemento a elemento imprimir o conteúdo do tabuleiro. 
+
+```prolog
+% printBoard(+Board, )
+% Displays the current board state
+printBoard(Board):-
+    nl,
+    printHeader,
+    printRows(Board, 10), nl.
+    
+% printRows(+Board, +N)
+% Displays all the rows on the given board
+printRows(_, 0).
+printRows([FirstElem|OtherElem], N):-
+    Number is 10 - N,
+    printRowNumber(Number),
+    N1 is N-1,
+    printRow(FirstElem),
+    printRowSep,
+    printRows(OtherElem,N1).
+    
+% printRow(+Board)
+% Displays a single row of the given board
+printRow([]):-
+    nl.
+printRow([FirstElem|OtherElem]):-
+    getRep(FirstElem,Label),
+    printRep(Label),
+    printColumnSep,
+    printRow(OtherElem).
+```
+
+Cada peça é representada da seguinte forma:
+- 'W' : peças brancas
+- 'B' : peças pretas
+- '.' : espaço vazio
+- 'G' : parede
+- 'J' : joker
+- 'P' : bonus
