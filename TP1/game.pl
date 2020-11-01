@@ -167,7 +167,18 @@ placeBonus(Board, NewBoard):-
      checkPlace(Board,X,Y),
      setPiece(Board, X, Y, bonus, NewBoard).
     
-    
+% initial
+% Default initial board state
+initial(X):-
+    initRandom,
+    createEmptyBoard(B0),
+    setInitialPieces(B0,B1),
+    wallSetupPhase(B1, 8, B2),
+    bonusSetupPhase(B2, 8, B3),
+    jokerSetupPhase(B3, 8, B4),
+    X = B4.
+
+   
     
     
     
