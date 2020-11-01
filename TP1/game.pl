@@ -4,35 +4,53 @@
 :- use_module(library(system)).
 :- include('board.pl').
 
+% initRandom
+% Sets the random number generator with a time-based seed
+initRandom:-
+    now(N),
+    Seed is ((N mod 30265) + 1),
+    setrand(random(Seed, Seed, Seed, N)).
+
 % play
 % Starts a new game
 play:-
-    now(N),
-    Seed is ((N mod 30265) + 1),
-    setrand(random(Seed, Seed, Seed, N)),
+    initRandom,
     createEmptyBoard(B0),
     setInitialPieces(B0,B1),
-    printBoard(B1),
-    jokerSetupPhase(B1, 0, B2),
-    write('Performing random Wall and Bonus pieces placement'), nl,
-    wallSetupPhase(B2, 8, B3),
-    bonusSetupPhase(B3, 8, B4),
-    printBoard(B4),
-    playGame(B4, 2, _),
-    write('Game Over').
+    nl, write('Performing random Wall and Bonus pieces placement'), nl,
+    wallSetupPhase(B1, 8, B2),
+    bonusSetupPhase(B2, 8, B3),
+    jokerSetupPhase(B3, 8, B4),
+    playGame(B4, 0, 16, _).
+
+% display_game(+Board, +Player)
+% Displays the current game state, and announces next player turn
+display_game(Board, Player):-
+    printBoard(Board),
+    write('Player '),
+    write(Player),
+    write(' Turn'), nl.
+
+% makeTurn(+Board, +Player, -NewBoard)
+% Goes through a player's turn on the game
+makeTurn(Board, 0, NewBoard):-
+    placeDiscPlayer1(Board, NewBoard).
+
+makeTurn(Board, 1, NewBoard):-
+    placeDiscPlayer2(Board, NewBoard).
 
 % playGame(+Board, +Turns, -NewBoard)
 % Goes through each player's turn on the game
-playGame(_, 0, _).
-playGame(Board, Turns, NewBoard):-
-    write('Player 1 Turn'), nl,
-    placeDiscPlayer1(Board, TempBoard),
-    printBoard(TempBoard),
-    write('Player 2 Turn'), nl,
-    placeDiscPlayer2(TempBoard, TempBoard2),
-    printBoard(TempBoard2),
+playGame(Board, _, 0, _):-
+    printBoard(Board),
+    write('Game Over!').
+playGame(Board, Player, Turns, NewBoard):-
     NewTurns is Turns - 1,
-    playGame(TempBoard2, NewTurns, NewBoard).
+    PlayerNum is Player mod 2,
+    NewPlayer is Player + 1,
+    display_game(Board, NewPlayer),
+    makeTurn(Board, PlayerNum, TempBoard),
+    playGame(TempBoard, NewPlayer, NewTurns, NewBoard).
 
 % readInput(-Input)
 % Reads a char input by the player    
@@ -95,8 +113,8 @@ jokerSetupPhase(Board, 0, Board).
 jokerSetupPhase(Board, N, NewBoard):-
     N > 0,
     N1 is N - 1,
+    printBoard(Board),
     placeJoker(Board, TempBoard),
-    printBoard(TempBoard),
     jokerSetupPhase(TempBoard, N1, NewBoard).
 
 % wallSetupPhase(+Board, +N, -NewBoard)
