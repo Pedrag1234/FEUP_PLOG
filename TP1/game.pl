@@ -86,8 +86,8 @@ checkInput('Joker', X, Y) :-
     (X == 0; X == 9).
 
 checkInput('Disc', X, Y) :-
-    between(1, 8, X),
-    between(1, 8, Y).
+    between(0, 9, X),
+    between(0, 9, Y).
 
 % validateJokerInput(+Xinput, +Yinput)
 % Checks if the coordinates used are valid for placing a Joker
@@ -136,13 +136,13 @@ bonusSetupPhase(Board, N, NewBoard):-
 % Places a black Disc (owned by player 1) on the board
 placeDiscPlayer1(Board, NewBoard):-
     readCoordinates('Disc', X, Y),
-    (validateDiscInput(X,Y) -> setPiece(Board,X,Y,black,NewBoard) ; write('Discs must be placed in the inner 8x8 square, input again\n'), nl, placeDiscPlayer1(Board,NewBoard)).
+    ((validateDiscInput(X,Y),validatePlay(Board,X,Y,black)) -> setPiece(Board,X,Y,black,NewBoard) ; write('Discs must be placed in the inner 8x8 square, input again\n'), nl, placeDiscPlayer1(Board,NewBoard)).
 
 % placeDiscPlayer2(+Board, -NewBoard)
 % Places a white Disc (owned by player 2) on the board
 placeDiscPlayer2(Board, NewBoard):-
     readCoordinates('Disc', X, Y),
-    (validateDiscInput(X,Y) -> setPiece(Board,X,Y,white,NewBoard) ; write('Discs must be placed in the inner 8x8 square, input again\n'), nl, placeDiscPlayer2(Board,NewBoard)).
+    ((validateDiscInput(X,Y),validatePlay(Board,X,Y,white)) -> setPiece(Board,X,Y,white,NewBoard) ; write('Discs must be placed in the inner 8x8 square, input again\n'), nl, placeDiscPlayer2(Board,NewBoard)).
 
 % placeJoker(+Board, -NewBoard)
 % Places a Joker on the board
@@ -173,8 +173,170 @@ initial(X):-
     setInitialPieces(B0,B1),
     X = B1.
 
-   
-    
-    
-    
+
+validatePlay(Board,X,Y,Player):-
+    X1 is X - 1,
+    X2 is X + 1,
+    Y1 is Y - 1,
+    Y2 is Y + 1,
+    checkLHorizontal(Board,X1,Y,Player);
+    checkRHorizontal(Board,X2,Y,Player);
+    checkUVertical(Board,X,Y1,Player);
+    checkDVertical(Board,X,Y2,Player);
+    checkLUDiagonal(Board,X1,Y1,Player);
+    checkLDDiagonal(Board,X1,Y2,Player);
+    checkRUDiagonal(Board,X2,Y1,Player);
+    checkRDDiagonal(Board,X2,Y2,Player).
+
+
+% checkLHorizontal(+Board,+NX,+NY,+Player)
+% checks if play is possible by checking all pieces to the left of the pos
+checkLHorizontal(Board,NX,NY, Player):-
+    Player == black,
+    getPiece(NY,NX,Board,Piece),
+    NX >= 0,
+    NX1 is NX - 1,
+    ((Piece =\= white ; Piece =\= black ; Piece =\= joker) -> fail, (Piece == black -> true, checkLHorizontal(Board,NX1,NY, Player))).
+
+checkLHorizontal(Board,NX,NY, Player):-
+    Player == white,
+    getPiece(NY,NX,Board,Piece),
+    NX >= 0,
+    NX1 is NX - 1,
+    ((Piece =\= white ; Piece =\= black ; Piece =\= joker) -> fail, (Piece == white -> true, checkLHorizontal(Board,NX1,NY, Player))).
+
+
+% checkRHorizontal(+Board,+NX,+NY,+Player)
+% checks if play is possible by checking all pieces to the right of the pos
+checkRHorizontal(Board,NX,NY, Player):-
+    Player == black,
+    getPiece(NY,NX,Board,Piece),
+    NX =< 9,
+    NX1 is NX + 1,
+    ((Piece =\= white ; Piece =\= black ; Piece =\= joker) -> fail, (Piece == black -> true, checkRHorizontal(Board,NX1,NY, Player))).
+
+checkRHorizontal(Board,NX,NY, Player):-
+    Player == white,
+    getPiece(NY,NX,Board,Piece),
+    NX =< 9,
+    NX1 is NX + 1,
+    ((Piece =\= white ; Piece =\= black ; Piece =\= joker) -> fail, (Piece == white -> true, checkRHorizontal(Board,NX1,NY, Player))).
+
+
+% checkUVertical(+Board,+NX,+NY,+Player)
+% checks if play is possible by checking all pieces above of the pos
+checkUVertical(Board,NX,NY, Player):-
+    Player == black,
+    getPiece(NY,NX,Board,Piece),
+    NY >= 0,
+    NY1 is NY - 1,
+    ((Piece =\= white ; Piece =\= black ; Piece =\= joker) -> fail, (Piece == black -> true, checkUVertical(Board,NX,NY1, Player))).
+
+checkUVertical(Board,NX,NY, Player):-
+    Player == white,
+    getPiece(NY,NX,Board,Piece),
+    NY >= 0,
+    NY1 is NY - 1,
+    ((Piece =\= white ; Piece =\= black ; Piece =\= joker) -> fail, (Piece == white -> true, checkUVertical(Board,NX,NY1, Player))).
+
+
+% checkDVertical(+Board,+NX,+NY,+Player)
+% checks if play is possible by checking all pieces bellow of the pos
+checkDVertical(Board,NX,NY, Player):-
+    Player == black,
+    getPiece(NY,NX,Board,Piece),
+    NY =< 9,
+    NY1 is NY + 1,
+    ((Piece =\= white ; Piece =\= black ; Piece =\= joker) -> fail, (Piece == black -> true, checkDVertical(Board,NX,NY1, Player))).
+
+checkDVertical(Board,NX,NY, Player):-
+    Player == white,
+    getPiece(NY,NX,Board,Piece),
+    NY =< 9,
+    NY1 is NY + 1,
+    ((Piece =\= white ; Piece =\= black ; Piece =\= joker) -> fail, (Piece == white -> true, checkDVertical(Board,NX,NY1, Player))).
+
+
+% checkRUDiagonal(+Board,+NX,+NY,+Player)
+% checks if play is possible by checking all pieces diagonally to the right and up of the pos
+checkRUDiagonal(Board,NX,NY, Player):-
+    Player == black,
+    getPiece(NY,NX,Board,Piece),
+    NX =< 9,
+    NY >= 0,
+    NY1 is NY - 1,
+    NX1 is NX + 1,
+    ((Piece =\= white ; Piece =\= black ; Piece =\= joker) -> fail, (Piece == black -> true, checkRUDiagonal(Board,NX1,NY1, Player))).
+
+checkRUDiagonal(Board,NX,NY, Player):-
+    Player == white,
+    getPiece(NY,NX,Board,Piece),
+    NX =< 9,
+    NY >= 0,
+    NY1 is NY - 1,
+    NX1 is NX + 1,
+    ((Piece =\= white ; Piece =\= black ; Piece =\= joker) -> fail, (Piece == white -> true, checkRUDiagonal(Board,NX1,NY1, Player))).
+
+
+% checkRDDiagonal(+Board,+NX,+NY,+Player)
+% checks if play is possible by checking all pieces diagonally to the right and down of the pos
+checkRDDiagonal(Board,NX,NY, Player):-
+    Player == black,
+    getPiece(NY,NX,Board,Piece),
+    NX =< 9,
+    NY =< 9,
+    NY1 is NY + 1,
+    NX1 is NX + 1,
+    ((Piece =\= white ; Piece =\= black ; Piece =\= joker) -> fail, (Piece == black -> true, checkRDDiagonal(Board,NX1,NY1, Player))).
+
+checkRDDiagonal(Board,NX,NY, Player):-
+    Player == white,
+    getPiece(NY,NX,Board,Piece),
+    NX =< 9,
+    NY =< 9,
+    NY1 is NY + 1,
+    NX1 is NX + 1,
+    ((Piece =\= white ; Piece =\= black ; Piece =\= joker) -> fail, (Piece == white -> true, checkRDDiagonal(Board,NX1,NY1, Player))).
+
+
+% checkLUDiagonal(+Board,+NX,+NY,+Player)
+% checks if play is possible by checking all pieces diagonally to the left and up of the pos
+checkLUDiagonal(Board,NX,NY, Player):-
+    Player == black,
+    getPiece(NY,NX,Board,Piece),
+    NX >= 0,
+    NY >= 0,
+    NY1 is NY - 1,
+    NX1 is NX - 1,
+    ((Piece =\= white ; Piece =\= black ; Piece =\= joker) -> fail, (Piece == black -> true, checkLUDiagonal(Board,NX1,NY1, Player))).
+
+checkLUDiagonal(Board,NX,NY, Player):-
+    Player == white,
+    getPiece(NY,NX,Board,Piece),
+    NX >= 0,
+    NY >= 0,
+    NY1 is NY - 1,
+    NX1 is NX - 1,
+    ((Piece =\= white ; Piece =\= black ; Piece =\= joker) -> fail, (Piece == white -> true, checkLUDiagonal(Board,NX1,NY1, Player))).
+
+
+% checkLDDiagonal(+Board,+NX,+NY,+Player)
+% checks if play is possible by checking all pieces diagonally to the left and down of the pos
+checkLDDiagonal(Board,NX,NY, Player):-
+    Player == black,
+    getPiece(NY,NX,Board,Piece),
+    NX >= 0,
+    NY =< 9,
+    NY1 is NY + 1,
+    NX1 is NX - 1,
+    ((Piece =\= white ; Piece =\= black ; Piece =\= joker) -> fail, (Piece == black -> true, checkLDDiagonal(Board,NX1,NY1, Player))).
+
+checkLDDiagonal(Board,NX,NY, Player):-
+    Player == white,
+    getPiece(NY,NX,Board,Piece),
+    NX >= 0,
+    NY =< 9,
+    NY1 is NY + 1,
+    NX1 is NX - 1,
+    ((Piece =\= white ; Piece =\= black ; Piece =\= joker) -> fail, (Piece == white -> true, checkLDDiagonal(Board,NX1,NY1, Player))).    
 
