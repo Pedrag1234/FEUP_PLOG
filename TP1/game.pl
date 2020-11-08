@@ -103,8 +103,8 @@ validateDiscInput(Xinput,Yinput):-
 % Checks if there is already a piece placed at the given coordinates
 checkPlace(Board, X, Y) :-
     getPiece(X, Y, Board, Piece),
-    getRep(Piece,Label),
-    if(Label == '.', true, fail).
+    getRep(Piece,_,Value),
+    if(Value == 1, true, fail).
 
 % jokerSetupPhase(+Board, +N, -NewBoard)
 % Sets up the initial Jokers on the board
@@ -182,11 +182,11 @@ validatePlay(Board,X,Y,Player):-
     checkLHorizontal(Board,X1,Y,Player);
     checkRHorizontal(Board,X2,Y,Player);
     checkUVertical(Board,X,Y1,Player);
-    checkDVertical(Board,X,Y2,Player);
-    checkLUDiagonal(Board,X1,Y1,Player);
-    checkLDDiagonal(Board,X1,Y2,Player);
-    checkRUDiagonal(Board,X2,Y1,Player);
-    checkRDDiagonal(Board,X2,Y2,Player).
+    checkDVertical(Board,X,Y2,Player).
+    %checkLUDiagonal(Board,X1,Y1,Player)).
+    %checkLDDiagonal(Board,X1,Y2,Player);
+    %checkRUDiagonal(Board,X2,Y1,Player);
+    %checkRDDiagonal(Board,X2,Y2,Player).
 
 
 % checkLHorizontal(+Board,+NX,+NY,+Player)
@@ -194,16 +194,18 @@ validatePlay(Board,X,Y,Player):-
 checkLHorizontal(Board,NX,NY, Player):-
     Player == black,
     getPiece(NY,NX,Board,Piece),
+    getRep(Piece,_,Value),
     NX >= 0,
     NX1 is NX - 1,
-    ((Piece =\= white ; Piece =\= black ; Piece =\= joker) -> fail, (Piece == black -> true, checkLHorizontal(Board,NX1,NY, Player))).
+    ((Value == 4; Value == 1) -> fail ; (Value == 3 -> true ; checkLHorizontal(Board,NX1,NY, Player))).
 
 checkLHorizontal(Board,NX,NY, Player):-
     Player == white,
     getPiece(NY,NX,Board,Piece),
+    getRep(Piece,_,Value),
     NX >= 0,
     NX1 is NX - 1,
-    ((Piece =\= white ; Piece =\= black ; Piece =\= joker) -> fail, (Piece == white -> true, checkLHorizontal(Board,NX1,NY, Player))).
+    ((Value == 4; Value == 1) -> fail ; (Value == 2 -> true ; checkLHorizontal(Board,NX1,NY, Player))).
 
 
 % checkRHorizontal(+Board,+NX,+NY,+Player)
@@ -211,16 +213,18 @@ checkLHorizontal(Board,NX,NY, Player):-
 checkRHorizontal(Board,NX,NY, Player):-
     Player == black,
     getPiece(NY,NX,Board,Piece),
+    getRep(Piece,_,Value),
     NX =< 9,
     NX1 is NX + 1,
-    ((Piece =\= white ; Piece =\= black ; Piece =\= joker) -> fail, (Piece == black -> true, checkRHorizontal(Board,NX1,NY, Player))).
+    ((Value == 4; Value == 1) -> fail ; (Value == 3 -> true ; checkRHorizontal(Board,NX1,NY, Player))).
 
 checkRHorizontal(Board,NX,NY, Player):-
     Player == white,
     getPiece(NY,NX,Board,Piece),
+    getRep(Piece,_,Value),
     NX =< 9,
     NX1 is NX + 1,
-    ((Piece =\= white ; Piece =\= black ; Piece =\= joker) -> fail, (Piece == white -> true, checkRHorizontal(Board,NX1,NY, Player))).
+    ((Value == 4; Value == 1) -> fail ; (Value == 2 -> true ; checkRHorizontal(Board,NX1,NY, Player))).
 
 
 % checkUVertical(+Board,+NX,+NY,+Player)
@@ -228,16 +232,18 @@ checkRHorizontal(Board,NX,NY, Player):-
 checkUVertical(Board,NX,NY, Player):-
     Player == black,
     getPiece(NY,NX,Board,Piece),
+    getRep(Piece,_,Value),
     NY >= 0,
     NY1 is NY - 1,
-    ((Piece =\= white ; Piece =\= black ; Piece =\= joker) -> fail, (Piece == black -> true, checkUVertical(Board,NX,NY1, Player))).
+    ((Value == 4; Value == 1) -> fail ; (Value == 3 -> true ; checkUVertical(Board,NX,NY1, Player))).
 
 checkUVertical(Board,NX,NY, Player):-
     Player == white,
     getPiece(NY,NX,Board,Piece),
+    getRep(Piece,_,Value),
     NY >= 0,
     NY1 is NY - 1,
-    ((Piece =\= white ; Piece =\= black ; Piece =\= joker) -> fail, (Piece == white -> true, checkUVertical(Board,NX,NY1, Player))).
+    ((Value == 4; Value == 1) -> fail ; (Value == 2 -> true ; checkUVertical(Board,NX,NY1, Player))).
 
 
 % checkDVertical(+Board,+NX,+NY,+Player)
@@ -245,16 +251,18 @@ checkUVertical(Board,NX,NY, Player):-
 checkDVertical(Board,NX,NY, Player):-
     Player == black,
     getPiece(NY,NX,Board,Piece),
+    getRep(Piece,_,Value),
     NY =< 9,
     NY1 is NY + 1,
-    ((Piece =\= white ; Piece =\= black ; Piece =\= joker) -> fail, (Piece == black -> true, checkDVertical(Board,NX,NY1, Player))).
+    ((Value == 4; Value == 1) -> fail ; (Value == 3 -> true ; checkDVertical(Board,NX,NY1, Player))).
 
 checkDVertical(Board,NX,NY, Player):-
     Player == white,
     getPiece(NY,NX,Board,Piece),
+    getRep(Piece,_,Value),
     NY =< 9,
     NY1 is NY + 1,
-    ((Piece =\= white ; Piece =\= black ; Piece =\= joker) -> fail, (Piece == white -> true, checkDVertical(Board,NX,NY1, Player))).
+    ((Value == 4; Value == 1) -> fail ; (Value == 2 -> true ; checkDVertical(Board,NX,NY1, Player))).
 
 
 % checkRUDiagonal(+Board,+NX,+NY,+Player)
@@ -262,20 +270,22 @@ checkDVertical(Board,NX,NY, Player):-
 checkRUDiagonal(Board,NX,NY, Player):-
     Player == black,
     getPiece(NY,NX,Board,Piece),
+    getRep(Piece,_,Value),
     NX =< 9,
     NY >= 0,
     NY1 is NY - 1,
     NX1 is NX + 1,
-    ((Piece =\= white ; Piece =\= black ; Piece =\= joker) -> fail, (Piece == black -> true, checkRUDiagonal(Board,NX1,NY1, Player))).
+    ((Value == 4; Value == 1) -> fail ; (Value == 3 -> true ; checkRUDiagonal(Board,NX1,NY1, Player))).
 
 checkRUDiagonal(Board,NX,NY, Player):-
     Player == white,
     getPiece(NY,NX,Board,Piece),
+    getRep(Piece,_,Value),
     NX =< 9,
     NY >= 0,
     NY1 is NY - 1,
     NX1 is NX + 1,
-    ((Piece =\= white ; Piece =\= black ; Piece =\= joker) -> fail, (Piece == white -> true, checkRUDiagonal(Board,NX1,NY1, Player))).
+    ((Value == 4; Value == 1) -> fail ; (Value == 2 -> true ; checkRUDiagonal(Board,NX1,NY1, Player))).
 
 
 % checkRDDiagonal(+Board,+NX,+NY,+Player)
@@ -283,20 +293,22 @@ checkRUDiagonal(Board,NX,NY, Player):-
 checkRDDiagonal(Board,NX,NY, Player):-
     Player == black,
     getPiece(NY,NX,Board,Piece),
+    getRep(Piece,_,Value),
     NX =< 9,
     NY =< 9,
     NY1 is NY + 1,
     NX1 is NX + 1,
-    ((Piece =\= white ; Piece =\= black ; Piece =\= joker) -> fail, (Piece == black -> true, checkRDDiagonal(Board,NX1,NY1, Player))).
+    ((Value == 4; Value == 1) -> fail ; (Value == 3 -> true ; checkRDDiagonal(Board,NX1,NY1, Player))).
 
 checkRDDiagonal(Board,NX,NY, Player):-
     Player == white,
     getPiece(NY,NX,Board,Piece),
+    getRep(Piece,_,Value),
     NX =< 9,
     NY =< 9,
     NY1 is NY + 1,
     NX1 is NX + 1,
-    ((Piece =\= white ; Piece =\= black ; Piece =\= joker) -> fail, (Piece == white -> true, checkRDDiagonal(Board,NX1,NY1, Player))).
+    ((Value == 4; Value == 1) -> fail ; (Value == 2 -> true ; checkRDDiagonal(Board,NX1,NY1, Player))).
 
 
 % checkLUDiagonal(+Board,+NX,+NY,+Player)
@@ -304,20 +316,22 @@ checkRDDiagonal(Board,NX,NY, Player):-
 checkLUDiagonal(Board,NX,NY, Player):-
     Player == black,
     getPiece(NY,NX,Board,Piece),
+    getRep(Piece,_,Value),
     NX >= 0,
     NY >= 0,
     NY1 is NY - 1,
     NX1 is NX - 1,
-    ((Piece =\= white ; Piece =\= black ; Piece =\= joker) -> fail, (Piece == black -> true, checkLUDiagonal(Board,NX1,NY1, Player))).
+    ((Value == 4; Value == 1) -> fail ; (Value == 3 -> true ; checkLUDiagonal(Board,NX1,NY1, Player))).
 
 checkLUDiagonal(Board,NX,NY, Player):-
     Player == white,
     getPiece(NY,NX,Board,Piece),
+    getRep(Piece,_,Value),
     NX >= 0,
     NY >= 0,
     NY1 is NY - 1,
     NX1 is NX - 1,
-    ((Piece =\= white ; Piece =\= black ; Piece =\= joker) -> fail, (Piece == white -> true, checkLUDiagonal(Board,NX1,NY1, Player))).
+    ((Value == 4; Value == 1) -> fail ; (Value == 2 -> true ; checkLUDiagonal(Board,NX1,NY1, Player))).
 
 
 % checkLDDiagonal(+Board,+NX,+NY,+Player)
@@ -325,18 +339,24 @@ checkLUDiagonal(Board,NX,NY, Player):-
 checkLDDiagonal(Board,NX,NY, Player):-
     Player == black,
     getPiece(NY,NX,Board,Piece),
+    getRep(Piece,_,Value),
     NX >= 0,
     NY =< 9,
     NY1 is NY + 1,
     NX1 is NX - 1,
-    ((Piece =\= white ; Piece =\= black ; Piece =\= joker) -> fail, (Piece == black -> true, checkLDDiagonal(Board,NX1,NY1, Player))).
+    ((Value == 4; Value == 1) -> fail ; (Value == 3 -> true ; checkLDDiagonal(Board,NX1,NY1, Player))).
 
 checkLDDiagonal(Board,NX,NY, Player):-
     Player == white,
     getPiece(NY,NX,Board,Piece),
+    getRep(Piece,_,Value),
     NX >= 0,
     NY =< 9,
     NY1 is NY + 1,
     NX1 is NX - 1,
-    ((Piece =\= white ; Piece =\= black ; Piece =\= joker) -> fail, (Piece == white -> true, checkLDDiagonal(Board,NX1,NY1, Player))).    
+    ((Value == 4; Value == 1) -> fail ; (Value == 2 -> true ; checkLDDiagonal(Board,NX1,NY1, Player))).    
 
+
+testComp:-
+    Tiece = none,
+    piece(none) == piece(Tiece).
