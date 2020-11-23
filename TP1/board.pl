@@ -4,13 +4,13 @@
 % getRep(+Piece, -Label)
 % Assigns a label to use on the board for each piece type
 
-getRep(none,'.',1).
-getRep(white,'W',2).
-getRep(black,'B',3).
-getRep(wall,'G',4).
-getRep(joker,'J',5).
-getRep(bonus,'P',6).
-getRep(_,_,_).
+getRep(none,'.').
+getRep(white,'W').
+getRep(black,'B').
+getRep(wall,'G').
+getRep(joker,'J').
+getRep(bonus,'P').
+getRep(_,_).
 
 % printRep(+Label)
 % Displays a piece's representation on the board
@@ -85,7 +85,7 @@ printRows([FirstElem|OtherElem], N):-
 printRow([]):-
     nl.
 printRow([FirstElem|OtherElem]):-
-    getRep(FirstElem,Label,_),
+    getRep(FirstElem,Label),
     printRep(Label),
     printColumnSep,
     printRow(OtherElem).

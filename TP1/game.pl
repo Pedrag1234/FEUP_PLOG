@@ -103,8 +103,8 @@ validateDiscInput(Xinput,Yinput):-
 % Checks if there is already a piece placed at the given coordinates
 checkPlace(Board, X, Y) :-
     getPiece(X, Y, Board, Piece),
-    getRep(Piece,_,Value),
-    if(Value == 1, true, fail).
+    getRep(Piece,Label),
+    Label == '.'.
 
 % jokerSetupPhase(+Board, +N, -NewBoard)
 % Sets up the initial Jokers on the board
@@ -179,218 +179,45 @@ validatePlay(Board,X,Y,Player):-
     X2 is X + 1,
     Y1 is Y - 1,
     Y2 is Y + 1,
-    checkLHorizontal(Board,X1,Y,Player);
-    checkRHorizontal(Board,X2,Y,Player);
-    checkUVertical(Board,X,Y1,Player);
-    checkDVertical(Board,X,Y2,Player);
-    checkLUDiagonal(Board,X1,Y1,Player);
-    checkLDDiagonal(Board,X1,Y2,Player);
-    checkRUDiagonal(Board,X2,Y1,Player);
-    checkRDDiagonal(Board,X2,Y2,Player).
+    checkLeft(Board,X1,Y,Player,0).
+    %checkRHorizontal(Board,X2,Y,Player,0);
+    %checkUVertical(Board,X,Y1,Player,0);
+    %checkDVertical(Board,X,Y2,Player,0).
+    %checkLUDiagonal(Board,X1,Y1,Player);
+    %checkLDDiagonal(Board,X1,Y2,Player);
+    %checkRUDiagonal(Board,X2,Y1,Player);
+    %checkRDDiagonal(Board,X2,Y2,Player).
 
 
 % checkLHorizontal(+Board,+NX,+NY,+Player)
 % checks if play is possible by checking all pieces to the left of the pos
-checkLHorizontal(Board,NX,NY, Player):-
-    getRep(Player,X,_),
-    getRep(black,Y,_),
-    X == Y,
-    getPiece(NY,NX,Board,Piece),
-    getRep(Piece,_,Value),
-    NX >= 0,
-    NX1 is NX - 1,
-    ((Value == 4; Value == 1) -> fail ; (Value == 3 -> true ; checkLHorizontal(Board,NX1,NY, Player))).
+checkLeft(Board,X,Y, Player,N):-
+    getRep(Player,VX),
+    getRep(black,VY),
+    compare(=, VX, VY),
+    X >= 0,
+    X1 is X - 1,
+    getPiece(Y,X,Board,Piece),
+    \+compare(=, Piece, none),
+    \+compare(=, Piece, wall),
+    ((compare(=, Piece, black) ; compare(=, Piece, joker))  -> \+compare(=, N, 0)  ;
+    N1 is N + 1,
+    checkLHorizontal(Board,X1,Y,Player,N1)),
+    !.
 
-checkLHorizontal(Board,NX,NY, Player):-
-    getRep(Player,X,_),
-    getRep(white,Y,_),
-    X == Y,
-    getPiece(NY,NX,Board,Piece),
-    getRep(Piece,_,Value),
-    NX >= 0,
-    NX1 is NX - 1,
-    ((Value == 4; Value == 1) -> fail ; (Value == 2 -> true ; checkLHorizontal(Board,NX1,NY, Player))).
+checkLeft(Board,X,Y, Player,N):-
+    getRep(Player,VX),
+    getRep(white,VY),
+    compare(=, VX, VY),
+    X >= 0,
+    X1 is X - 1,
+    getPiece(Y,X,Board,Piece),
+    \+compare(=, Piece, none),
+    \+compare(=, Piece, wall),
+    ((compare(=, Piece, white) ; compare(=, Piece, joker)) -> \+compare(=, N, 0) ; 
+    N1 is N + 1,
+    checkLHorizontal(Board,X1,Y,Player,N1)),
+    !.
+        
 
-
-% checkRHorizontal(+Board,+NX,+NY,+Player)
-% checks if play is possible by checking all pieces to the right of the pos
-checkRHorizontal(Board,NX,NY, Player):-
-    getRep(Player,X,_),
-    getRep(black,Y,_),
-    X == Y,
-    getPiece(NY,NX,Board,Piece),
-    getRep(Piece,_,Value),
-    NX =< 9,
-    NX1 is NX + 1,
-    ((Value == 4; Value == 1) -> fail ; (Value == 3 -> true ; checkRHorizontal(Board,NX1,NY, Player))).
-
-checkRHorizontal(Board,NX,NY, Player):-
-    getRep(Player,X,_),
-    getRep(white,Y,_),
-    X == Y,
-    getPiece(NY,NX,Board,Piece),
-    getRep(Piece,_,Value),
-    NX =< 9,
-    NX1 is NX + 1,
-    ((Value == 4; Value == 1) -> fail ; (Value == 2 -> true ; checkRHorizontal(Board,NX1,NY, Player))).
-
-
-% checkUVertical(+Board,+NX,+NY,+Player)
-% checks if play is possible by checking all pieces above of the pos
-checkUVertical(Board,NX,NY, Player):-
-    getRep(Player,X,_),
-    getRep(black,Y,_),
-    X == Y,
-    getPiece(NY,NX,Board,Piece),
-    getRep(Piece,_,Value),
-    NY >= 0,
-    NY1 is NY - 1,
-    ((Value == 4; Value == 1) -> fail ; (Value == 3 -> true ; checkUVertical(Board,NX,NY1, Player))).
-
-checkUVertical(Board,NX,NY, Player):-
-    getRep(Player,X,_),
-    getRep(white,Y,_),
-    X == Y,
-    getPiece(NY,NX,Board,Piece),
-    getRep(Piece,_,Value),
-    NY >= 0,
-    NY1 is NY - 1,
-    ((Value == 4; Value == 1) -> fail ; (Value == 2 -> true ; checkUVertical(Board,NX,NY1, Player))).
-
-
-% checkDVertical(+Board,+NX,+NY,+Player)
-% checks if play is possible by checking all pieces bellow of the pos
-checkDVertical(Board,NX,NY, Player):-
-    getRep(Player,X,_),
-    getRep(black,Y,_),
-    X == Y,
-    getPiece(NY,NX,Board,Piece),
-    getRep(Piece,_,Value),
-    NY =< 9,
-    NY1 is NY + 1,
-    ((Value == 4; Value == 1) -> fail ; (Value == 3 -> true ; checkDVertical(Board,NX,NY1, Player))).
-
-checkDVertical(Board,NX,NY, Player):-
-    getRep(Player,X,_),
-    getRep(white,Y,_),
-    X == Y,
-    getPiece(NY,NX,Board,Piece),
-    getRep(Piece,_,Value),
-    NY =< 9,
-    NY1 is NY + 1,
-    ((Value == 4; Value == 1) -> fail ; (Value == 2 -> true ; checkDVertical(Board,NX,NY1, Player))).
-
-
-% checkRUDiagonal(+Board,+NX,+NY,+Player)
-% checks if play is possible by checking all pieces diagonally to the right and up of the pos
-checkRUDiagonal(Board,NX,NY, Player):-
-    getRep(Player,X,_),
-    getRep(black,Y,_),
-    X == Y,
-    getPiece(NY,NX,Board,Piece),
-    getRep(Piece,_,Value),
-    NX =< 9,
-    NY >= 0,
-    NY1 is NY - 1,
-    NX1 is NX + 1,
-    ((Value == 4; Value == 1) -> fail ; (Value == 3 -> true ; checkRUDiagonal(Board,NX1,NY1, Player))).
-
-checkRUDiagonal(Board,NX,NY, Player):-
-    getRep(Player,X,_),
-    getRep(white,Y,_),
-    X == Y,
-    getPiece(NY,NX,Board,Piece),
-    getRep(Piece,_,Value),
-    NX =< 9,
-    NY >= 0,
-    NY1 is NY - 1,
-    NX1 is NX + 1,
-    ((Value == 4; Value == 1) -> fail ; (Value == 2 -> true ; checkRUDiagonal(Board,NX1,NY1, Player))).
-
-
-% checkRDDiagonal(+Board,+NX,+NY,+Player)
-% checks if play is possible by checking all pieces diagonally to the right and down of the pos
-checkRDDiagonal(Board,NX,NY, Player):-
-    getRep(Player,X,_),
-    getRep(black,Y,_),
-    X == Y,
-    getPiece(NY,NX,Board,Piece),
-    getRep(Piece,_,Value),
-    NX =< 9,
-    NY =< 9,
-    NY1 is NY + 1,
-    NX1 is NX + 1,
-    ((Value == 4; Value == 1) -> fail ; (Value == 3 -> true ; checkRDDiagonal(Board,NX1,NY1, Player))).
-
-checkRDDiagonal(Board,NX,NY, Player):-
-    getRep(Player,X,_),
-    getRep(white,Y,_),
-    X == Y,
-    getPiece(NY,NX,Board,Piece),
-    getRep(Piece,_,Value),
-    NX =< 9,
-    NY =< 9,
-    NY1 is NY + 1,
-    NX1 is NX + 1,
-    ((Value == 4; Value == 1) -> fail ; (Value == 2 -> true ; checkRDDiagonal(Board,NX1,NY1, Player))).
-
-
-% checkLUDiagonal(+Board,+NX,+NY,+Player)
-% checks if play is possible by checking all pieces diagonally to the left and up of the pos
-checkLUDiagonal(Board,NX,NY, Player):-
-    getRep(Player,X,_),
-    getRep(black,Y,_),
-    X == Y,
-    getPiece(NY,NX,Board,Piece),
-    getRep(Piece,_,Value),
-    NX >= 0,
-    NY >= 0,
-    NY1 is NY - 1,
-    NX1 is NX - 1,
-    ((Value == 4; Value == 1) -> fail ; (Value == 3 -> true ; checkLUDiagonal(Board,NX1,NY1, Player))).
-
-checkLUDiagonal(Board,NX,NY, Player):-
-    getRep(Player,X,_),
-    getRep(white,Y,_),
-    X == Y,
-    getPiece(NY,NX,Board,Piece),
-    getRep(Piece,_,Value),
-    NX >= 0,
-    NY >= 0,
-    NY1 is NY - 1,
-    NX1 is NX - 1,
-    ((Value == 4; Value == 1) -> fail ; (Value == 2 -> true ; checkLUDiagonal(Board,NX1,NY1, Player))).
-
-
-% checkLDDiagonal(+Board,+NX,+NY,+Player)
-% checks if play is possible by checking all pieces diagonally to the left and down of the pos
-checkLDDiagonal(Board,NX,NY, Player):-
-    getRep(Player,X,_),
-    getRep(black,Y,_),
-    X == Y,
-    getPiece(NY,NX,Board,Piece),
-    getRep(Piece,_,Value),
-    NX >= 0,
-    NY =< 9,
-    NY1 is NY + 1,
-    NX1 is NX - 1,
-    ((Value == 4; Value == 1) -> fail ; (Value == 3 -> true ; checkLDDiagonal(Board,NX1,NY1, Player))).
-
-checkLDDiagonal(Board,NX,NY, Player):-
-    getRep(Player,X,_),
-    getRep(white,Y,_),
-    X == Y,
-    getPiece(NY,NX,Board,Piece),
-    getRep(Piece,_,Value),
-    NX >= 0,
-    NY =< 9,
-    NY1 is NY + 1,
-    NX1 is NX - 1,
-    ((Value == 4; Value == 1) -> fail ; (Value == 2 -> true ; checkLDDiagonal(Board,NX1,NY1, Player))).    
-
-
-testComp:-
-    Tiece = none,
-    getRep(Tiece,X,_),
-    getRep(black,Y,_),
-    X == Y.
+    
