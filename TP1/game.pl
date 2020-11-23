@@ -182,14 +182,12 @@ validatePlay(Board,X,Y,Player):-
     (checkLeft(Board,X1,Y, Player,0);
     checkRight(Board,X2,Y, Player,0);
     checkUp(Board,X,Y1, Player,0);
-    checkDown(Board,X,Y2, Player,0)).
-    %checkRHorizontal(Board,X2,Y,Player,0);
-    %checkUVertical(Board,X,Y1,Player,0);
-    %checkDVertical(Board,X,Y2,Player,0).
-    %checkLUDiagonal(Board,X1,Y1,Player);
-    %checkLDDiagonal(Board,X1,Y2,Player);
-    %checkRUDiagonal(Board,X2,Y1,Player);
-    %checkRDDiagonal(Board,X2,Y2,Player).
+    checkDown(Board,X,Y2, Player,0);
+    checkLeftUp(Board,X1,Y1, Player,0);
+    checkLeftDown(Board,X1,Y2, Player,0);
+    checkRightUp(Board,X2,Y1, Player,0);
+    checkRightDown(Board,X2,Y2, Player,0)).
+    
 
 
 % checkLHorizontal(+Board,+NX,+NY,+Player)
@@ -261,7 +259,7 @@ checkUp(Board,X,Y, Player,N):-
     \+compare(=, Piece, wall),
     ((compare(=, Piece, black) ; compare(=, Piece, joker))  -> \+compare(=, N, 0)  ;
     N1 is N + 1,
-    checkUp(Board,X1,Y, Player,N1)),
+    checkUp(Board,X,Y1, Player,N1)),
     !.
 
 checkUp(Board,X,Y, Player,N):-
@@ -275,7 +273,7 @@ checkUp(Board,X,Y, Player,N):-
     \+compare(=, Piece, wall),
     ((compare(=, Piece, white) ; compare(=, Piece, joker))  -> \+compare(=, N, 0)  ;
     N1 is N + 1,
-    checkUp(Board,X1,Y, Player,N1)),
+    checkUp(Board,X,Y1, Player,N1)),
     !. 
 
 checkDown(Board,X,Y, Player,N):-
@@ -289,7 +287,7 @@ checkDown(Board,X,Y, Player,N):-
     \+compare(=, Piece, wall),
     ((compare(=, Piece, black) ; compare(=, Piece, joker))  -> \+compare(=, N, 0)  ;
     N1 is N + 1,
-    checkDown(Board,X1,Y, Player,N1)),
+    checkDown(Board,X,Y1, Player,N1)),
     !.
 
 checkDown(Board,X,Y, Player,N):-
@@ -303,5 +301,133 @@ checkDown(Board,X,Y, Player,N):-
     \+compare(=, Piece, wall),
     ((compare(=, Piece, white) ; compare(=, Piece, joker))  -> \+compare(=, N, 0)  ;
     N1 is N + 1,
-    checkDown(Board,X1,Y, Player,N1)),
-    !.       
+    checkDown(Board,X,Y1, Player,N1)),
+    !.
+
+checkLeftUp(Board,X,Y, Player,N):-
+    getRep(Player,VX),
+    getRep(black,VY),
+    compare(=, VX, VY),
+    X >= 0,
+    Y >= 0,
+    Y1 is Y - 1,
+    X1 is X - 1,
+    getPiece(Y,X,Board,Piece),
+    \+compare(=, Piece, none),
+    \+compare(=, Piece, wall),
+    ((compare(=, Piece, black) ; compare(=, Piece, joker))  -> \+compare(=, N, 0)  ;
+    N1 is N + 1,
+    checkLeftUp(Board,X1,Y1, Player,N1)),
+    !.
+
+checkLeftUp(Board,X,Y, Player,N):-
+    getRep(Player,VX),
+    getRep(white,VY),
+    compare(=, VX, VY),
+    X >= 0,
+    Y >= 0,
+    Y1 is Y - 1,
+    X1 is X - 1,
+    getPiece(Y,X,Board,Piece),
+    \+compare(=, Piece, none),
+    \+compare(=, Piece, wall),
+    ((compare(=, Piece, white) ; compare(=, Piece, joker))  -> \+compare(=, N, 0)  ;
+    N1 is N + 1,
+    checkLeftUp(Board,X1,Y1, Player,N1)),
+    !. 
+
+checkLeftDown(Board,X,Y, Player,N):-
+    getRep(Player,VX),
+    getRep(black,VY),
+    compare(=, VX, VY),
+    X >= 0,
+    Y =< 9,
+    Y1 is Y + 1,
+    X1 is X - 1,
+    getPiece(Y,X,Board,Piece),
+    \+compare(=, Piece, none),
+    \+compare(=, Piece, wall),
+    ((compare(=, Piece, black) ; compare(=, Piece, joker))  -> \+compare(=, N, 0)  ;
+    N1 is N + 1,
+    checkLeftDown(Board,X1,Y1, Player,N1)),
+    !.
+
+checkLeftDown(Board,X,Y, Player,N):-
+    getRep(Player,VX),
+    getRep(white,VY),
+    compare(=, VX, VY),
+    X >= 0,
+    Y =< 9,
+    Y1 is Y + 1,
+    X1 is X - 1,
+    getPiece(Y,X,Board,Piece),
+    \+compare(=, Piece, none),
+    \+compare(=, Piece, wall),
+    ((compare(=, Piece, white) ; compare(=, Piece, joker))  -> \+compare(=, N, 0)  ;
+    N1 is N + 1,
+    checkLeftDown(Board,X1,Y1, Player,N1)),
+    !.
+
+checkRightUp(Board,X,Y, Player,N):-
+    getRep(Player,VX),
+    getRep(black,VY),
+    compare(=, VX, VY),
+    X =< 9,
+    Y >= 0,
+    Y1 is Y - 1,
+    X1 is X + 1,
+    getPiece(Y,X,Board,Piece),
+    \+compare(=, Piece, none),
+    \+compare(=, Piece, wall),
+    ((compare(=, Piece, black) ; compare(=, Piece, joker))  -> \+compare(=, N, 0)  ;
+    N1 is N + 1,
+    checkRightUp(Board,X1,Y1, Player,N1)),
+    !.
+
+checkRightUp(Board,X,Y, Player,N):-
+    getRep(Player,VX),
+    getRep(white,VY),
+    compare(=, VX, VY),
+    X =< 9,
+    Y >= 0,
+    Y1 is Y - 1,
+    X1 is X + 1,
+    getPiece(Y,X,Board,Piece),
+    \+compare(=, Piece, none),
+    \+compare(=, Piece, wall),
+    ((compare(=, Piece, white) ; compare(=, Piece, joker))  -> \+compare(=, N, 0)  ;
+    N1 is N + 1,
+    checkRightUp(Board,X1,Y1, Player,N1)),
+    !.
+
+checkRightDown(Board,X,Y, Player,N):-
+    getRep(Player,VX),
+    getRep(black,VY),
+    compare(=, VX, VY),
+    X =< 9,
+    Y =< 9,
+    Y1 is Y + 1,
+    X1 is X + 1,
+    getPiece(Y,X,Board,Piece),
+    \+compare(=, Piece, none),
+    \+compare(=, Piece, wall),
+    ((compare(=, Piece, black) ; compare(=, Piece, joker))  -> \+compare(=, N, 0)  ;
+    N1 is N + 1,
+    checkRightDown(Board,X1,Y1, Player,N1)),
+    !.
+
+checkRightDown(Board,X,Y, Player,N):-
+    getRep(Player,VX),
+    getRep(white,VY),
+    compare(=, VX, VY),
+    X =< 9,
+    Y =< 9,
+    Y1 is Y + 1,
+    X1 is X + 1,
+    getPiece(Y,X,Board,Piece),
+    \+compare(=, Piece, none),
+    \+compare(=, Piece, wall),
+    ((compare(=, Piece, white) ; compare(=, Piece, joker))  -> \+compare(=, N, 0)  ;
+    N1 is N + 1,
+    checkRightDown(Board,X1,Y1, Player,N1)),
+    !.
