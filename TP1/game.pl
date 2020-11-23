@@ -180,7 +180,8 @@ validatePlay(Board,X,Y,Player):-
     Y1 is Y - 1,
     Y2 is Y + 1,
     (checkLeft(Board,X1,Y, Player,0);
-    checkRight(Board,X2,Y, Player,0)).
+    checkRight(Board,X2,Y, Player,0);
+    checkUp(Board,X,Y1, Player,0)).
     %checkRHorizontal(Board,X2,Y,Player,0);
     %checkUVertical(Board,X,Y1,Player,0);
     %checkDVertical(Board,X,Y2,Player,0).
@@ -247,4 +248,31 @@ checkRight(Board,X,Y, Player,N):-
     N1 is N + 1,
     checkRight(Board,X1,Y, Player,N1)),
     !.
-    
+
+checkUp(Board,X,Y, Player,N):-
+    getRep(Player,VX),
+    getRep(black,VY),
+    compare(=, VX, VY),
+    Y >= 0,
+    Y1 is Y - 1,
+    getPiece(Y,X,Board,Piece),
+    \+compare(=, Piece, none),
+    \+compare(=, Piece, wall),
+    ((compare(=, Piece, black) ; compare(=, Piece, joker))  -> \+compare(=, N, 0)  ;
+    N1 is N + 1,
+    checkUp(Board,X1,Y, Player,N1)),
+    !.
+
+checkUp(Board,X,Y, Player,N):-
+    getRep(Player,VX),
+    getRep(white,VY),
+    compare(=, VX, VY),
+    Y >= 0,
+    Y1 is Y - 1,
+    getPiece(Y,X,Board,Piece),
+    \+compare(=, Piece, none),
+    \+compare(=, Piece, wall),
+    ((compare(=, Piece, white) ; compare(=, Piece, joker))  -> \+compare(=, N, 0)  ;
+    N1 is N + 1,
+    checkUp(Board,X1,Y, Player,N1)),
+    !.    
