@@ -184,7 +184,7 @@ validatePlay(Board,X,Y,Player):-
     checkUVertical(Board,X,Y1,Player);
     checkDVertical(Board,X,Y2,Player);
     checkLUDiagonal(Board,X1,Y1,Player);
-    checkLDDiagonal(Board,X1,Y2,Player).
+    checkLDDiagonal(Board,X1,Y2,Player);
     checkRUDiagonal(Board,X2,Y1,Player);
     checkRDDiagonal(Board,X2,Y2,Player).
 
