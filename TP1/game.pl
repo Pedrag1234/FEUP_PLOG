@@ -179,7 +179,7 @@ validatePlay(Board,X,Y,Player):-
     X2 is X + 1,
     Y1 is Y - 1,
     Y2 is Y + 1,
-    checkLeft(Board,X1,Y,Player,0).
+    checkLeft(Board,X1,Y, Player,0).
     %checkRHorizontal(Board,X2,Y,Player,0);
     %checkUVertical(Board,X,Y1,Player,0);
     %checkDVertical(Board,X,Y2,Player,0).
@@ -202,7 +202,7 @@ checkLeft(Board,X,Y, Player,N):-
     \+compare(=, Piece, wall),
     ((compare(=, Piece, black) ; compare(=, Piece, joker))  -> \+compare(=, N, 0)  ;
     N1 is N + 1,
-    checkLHorizontal(Board,X1,Y,Player,N1)),
+    checkLeft(Board,X1,Y, Player,N1)),
     !.
 
 checkLeft(Board,X,Y, Player,N):-
@@ -216,7 +216,7 @@ checkLeft(Board,X,Y, Player,N):-
     \+compare(=, Piece, wall),
     ((compare(=, Piece, white) ; compare(=, Piece, joker)) -> \+compare(=, N, 0) ; 
     N1 is N + 1,
-    checkLHorizontal(Board,X1,Y,Player,N1)),
+    checkLeft(Board,X1,Y, Player,N1)),
     !.
         
 
