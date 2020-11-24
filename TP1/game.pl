@@ -173,6 +173,62 @@ initial(X):-
     setInitialPieces(B0,B1),
     X = B1.
 
+capturePieceHorizontal(_, _, X, X, _, _).
+
+capturePieceHorizontal(Board, Player, X, XLimit, Y, NewBoard) :-
+    getRep(Player, VX),
+    getRep(black, VY),
+    compare(=, VX, VY),
+    X1 is X + 1,
+    getPiece(Y,X,Board,Piece),
+    (compare(=, Piece, white),
+    setPiece(Board,X,Y,black,NewBoard),
+    capturePieceHorizontal(Board, Player, X1, XLimit, Y, NewBoard));
+    capturePieceHorizontal(Board, Player, X1, XLimit, Y, NewBoard).
+
+capturePieceHorizontal(Board, Player, X, XLimit, Y, NewBoard) :-
+    getRep(Player, VX),
+    getRep(white, VY),
+    compare(=, VX, VY),
+    X1 is X + 1,
+    getPiece(Y,X,Board,Piece),
+    (compare(=, Piece, black),
+    setPiece(Board,X,Y,white,NewBoard),
+    capturePieceHorizontal(Board, Player, X1, XLimit, Y, NewBoard));
+    capturePieceHorizontal(Board, Player, X1, XLimit, Y, NewBoard).
+
+capturePieceVertical(_, _, _, Y, Y, _).
+
+capturePieceVertical(Board, Player, X, Y, YLimit, NewBoard) :-
+    getRep(Player, VX),
+    getRep(black, VY),
+    compare(=, VX, VY),
+    Y1 is Y + 1,
+    getPiece(Y,X,Board,Piece),
+    (compare(=, Piece, white),
+    setPiece(Board,X,Y,black,NewBoard),
+    capturePieceVertical(Board, Player, X, Y1, YLimit, NewBoard));
+    capturePieceVertical(Board, Player, X, Y1, YLimit, NewBoard).
+
+capturePieceVertical(Board, Player, X, Y, YLimit, NewBoard) :-
+    getRep(Player, VX),
+    getRep(white, VY),
+    compare(=, VX, VY),
+    Y1 is Y + 1,
+    getPiece(Y,X,Board,Piece),
+    (compare(=, Piece, black),
+    setPiece(Board,X,Y,white,NewBoard),
+    capturePieceVertical(Board, Player, X, Y1, YLimit, NewBoard));
+    capturePieceVertical(Board, Player, X, Y1, YLimit, NewBoard).
+                      
+% getLeftPiece(Board,X,Y,Player,XLeft) :-
+% getRep(Player,VX),
+% getRep(black,VY),
+% compare(=, VX, VY),
+% X1 is X - 1,
+% getPiece(Y, X, Board, Piece),
+% compare(=, Piece, black) ; getLeftPiece(Board,X,Y,Player,XLeft),
+% !.
 
 validatePlay(Board,X,Y,Player):-
     X1 is X - 1,
@@ -188,7 +244,6 @@ validatePlay(Board,X,Y,Player):-
     checkRightUp(Board,X2,Y1, Player,0);
     checkRightDown(Board,X2,Y2, Player,0)).
     
-
 
 % checkLHorizontal(+Board,+NX,+NY,+Player)
 % checks if play is possible by checking all pieces to the left of the pos
