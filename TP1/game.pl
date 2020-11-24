@@ -20,8 +20,9 @@ play:-
     wallSetupPhase(B0, 8, B1),
     bonusSetupPhase(B1, 8, B2),
     jokerSetupPhase(B2, 1, B3),
-    capturePieceHorizontal(B3, black, 2, 7, 4, B4),
-    playGame(B4, 0, 16, _).
+    capturePieceVertical(B3, white, black, 5, 2, 7, B4),
+    capturePieceVertical(B4, white, black, 4, 2, 7, B5),
+    playGame(B5, 0, 16, _).
 
 % display_game(+Board, +Player)
 % Displays the current game state, and announces next player turn
@@ -174,53 +175,21 @@ initial(X):-
     setInitialPieces(B0,B1),
     X = B1.
 
-capturePieceHorizontal(Board, _, X, X, _, Board).
+capturePieceHorizontal(Board, _, _, X, X, _, Board).
 
-capturePieceHorizontal(Board, Player, X, XLimit, Y, NewBoard) :-
-    getRep(Player, VX),
-    getRep(black, VY),
-    compare(=, VX, VY),
+capturePieceHorizontal(Board, Player, Capture, X, XLimit, Y, NewBoard) :-
     X1 is X + 1,
     getPiece(Y,X,Board,Piece),
-    (compare(=, Piece, white),
-    setPiece(Board,X,Y,black,TempBoard),
-    capturePieceHorizontal(TempBoard, Player, X1, XLimit, Y, NewBoard));
-    capturePieceHorizontal(Board, Player, X1, XLimit, Y, NewBoard).
+    (compare(=, Piece, Capture) -> (setPiece(Board,X,Y,Player,TempBoard), capturePieceHorizontal(TempBoard, Player, Capture, X1, XLimit, Y, NewBoard));
+    capturePieceHorizontal(Board, Player, Capture, X1, XLimit, Y, NewBoard)).
 
-capturePieceHorizontal(Board, Player, X, XLimit, Y, NewBoard) :-
-    getRep(Player, VX),
-    getRep(white, VY),
-    compare(=, VX, VY),
-    X1 is X + 1,
-    getPiece(Y,X,Board,Piece),
-    (compare(=, Piece, black),
-    setPiece(Board,X,Y,white,NewBoard),
-    capturePieceHorizontal(Board, Player, X1, XLimit, Y, NewBoard));
-    capturePieceHorizontal(Board, Player, X1, XLimit, Y, NewBoard).
+capturePieceVertical(_, _, _, _, Y, Y, _).
 
-capturePieceVertical(_, _, _, Y, Y, _).
-
-capturePieceVertical(Board, Player, X, Y, YLimit, NewBoard) :-
-    getRep(Player, VX),
-    getRep(black, VY),
-    compare(=, VX, VY),
+capturePieceVertical(Board, Player, Capture, X, Y, YLimit, NewBoard) :-
     Y1 is Y + 1,
     getPiece(Y,X,Board,Piece),
-    (compare(=, Piece, white),
-    setPiece(Board,X,Y,black,NewBoard),
-    capturePieceVertical(Board, Player, X, Y1, YLimit, NewBoard));
-    capturePieceVertical(Board, Player, X, Y1, YLimit, NewBoard).
-
-capturePieceVertical(Board, Player, X, Y, YLimit, NewBoard) :-
-    getRep(Player, VX),
-    getRep(white, VY),
-    compare(=, VX, VY),
-    Y1 is Y + 1,
-    getPiece(Y,X,Board,Piece),
-    (compare(=, Piece, black),
-    setPiece(Board,X,Y,white,NewBoard),
-    capturePieceVertical(Board, Player, X, Y1, YLimit, NewBoard));
-    capturePieceVertical(Board, Player, X, Y1, YLimit, NewBoard).
+    (compare(=, Piece, Capture) -> (setPiece(Board,X,Y,Player,NewBoard), capturePieceVertical(Board, Player, Capture, X, Y1, YLimit, NewBoard));
+    capturePieceVertical(Board, Player, Capture, X, Y1, YLimit, NewBoard)).
                       
 % getLeftPiece(Board,X,Y,Player,XLeft) :-
 % getRep(Player,VX),
