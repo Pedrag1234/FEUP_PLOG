@@ -19,8 +19,9 @@ play:-
     nl, write('Performing random Wall and Bonus pieces placement'), nl,
     wallSetupPhase(B0, 8, B1),
     bonusSetupPhase(B1, 8, B2),
-    jokerSetupPhase(B2, 8, B3),
-    playGame(B3, 0, 16, _).
+    jokerSetupPhase(B2, 1, B3),
+    capturePieceHorizontal(B3, black, 2, 7, 4, B4),
+    playGame(B4, 0, 16, _).
 
 % display_game(+Board, +Player)
 % Displays the current game state, and announces next player turn
@@ -173,7 +174,7 @@ initial(X):-
     setInitialPieces(B0,B1),
     X = B1.
 
-capturePieceHorizontal(_, _, X, X, _, _).
+capturePieceHorizontal(Board, _, X, X, _, Board).
 
 capturePieceHorizontal(Board, Player, X, XLimit, Y, NewBoard) :-
     getRep(Player, VX),
@@ -182,8 +183,8 @@ capturePieceHorizontal(Board, Player, X, XLimit, Y, NewBoard) :-
     X1 is X + 1,
     getPiece(Y,X,Board,Piece),
     (compare(=, Piece, white),
-    setPiece(Board,X,Y,black,NewBoard),
-    capturePieceHorizontal(Board, Player, X1, XLimit, Y, NewBoard));
+    setPiece(Board,X,Y,black,TempBoard),
+    capturePieceHorizontal(TempBoard, Player, X1, XLimit, Y, NewBoard));
     capturePieceHorizontal(Board, Player, X1, XLimit, Y, NewBoard).
 
 capturePieceHorizontal(Board, Player, X, XLimit, Y, NewBoard) :-
