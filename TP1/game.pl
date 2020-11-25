@@ -234,6 +234,24 @@ validatePlay(Board,X,Y,Player):-
     checkRightDown(Board,X2,Y2, Player,0)).
     
 
+
+canPlay(Board,Player).
+
+checkAllValidMoves(_,_,_,10,_).
+checkAllValidMoves(Board, Player, [H|T], Y, X):-
+    checkRowAllValidMoves(Board,Player,H,Y,X),
+    Y1 is Y + 1,
+    checkAllValidMoves(Board, Player, T, Y1, X).
+
+checkRowAllValidMoves(_,_,_,_,10).
+checkRowAllValidMoves(Board, Player, [H|T], Y, X):-
+    X1 is X + 1,
+    (validatePlay(Board,X,Y,Player) -> write(X),write('|'),write(Y),nl, H = [X|Y], checkRowAllValidMoves(Board,Player,T,Y,X1) ; checkRowAllValidMoves(Board,Player,T,Y,X1)).
+    
+
+
+
+
 % checkLHorizontal(+Board,+NX,+NY,+Player)
 % checks if play is possible by checking all pieces to the left of the pos
 checkLeft(Board,X,Y, Player,N):-
@@ -495,6 +513,12 @@ checkRowEmptyPlaces(Board,X,Y):-
     X1 is X + 1,
     checkRowEmptyPlaces(Board,X1,Y).
     
+
+testValidMoves:-
+    initial(B0),
+    checkAllValidMoves(B0,black,Points,0,0),
+    write(Points).
+
 testGameOver:-
     initial(B0),
-    isGameOver(B0,0,0,0).
+    (isGameOver(B0,0,0,0) -> write('Game is Over') ; write('Game is not Over')).
