@@ -20,9 +20,8 @@ play:-
     wallSetupPhase(B0, 8, B1),
     bonusSetupPhase(B1, 8, B2),
     jokerSetupPhase(B2, 1, B3),
-    capturePieceVertical(B3, white, black, 5, 2, 7, B4),
-    capturePieceVertical(B4, white, black, 4, 2, 7, B5),
-    playGame(B5, 0, 16, _).
+    capturePieceDiagonal(B3, black, white, 2, 6, 2, 6, B4),
+    playGame(B4, 0, 16, _).
 
 % display_game(+Board, +Player)
 % Displays the current game state, and announces next player turn
@@ -183,13 +182,22 @@ capturePieceHorizontal(Board, Player, Capture, X, XLimit, Y, NewBoard) :-
     (compare(=, Piece, Capture) -> (setPiece(Board,X,Y,Player,TempBoard), capturePieceHorizontal(TempBoard, Player, Capture, X1, XLimit, Y, NewBoard));
     capturePieceHorizontal(Board, Player, Capture, X1, XLimit, Y, NewBoard)).
 
-capturePieceVertical(_, _, _, _, Y, Y, _).
+capturePieceVertical(Board, _, _, _, Y, Y, Board).
 
 capturePieceVertical(Board, Player, Capture, X, Y, YLimit, NewBoard) :-
     Y1 is Y + 1,
     getPiece(Y,X,Board,Piece),
     (compare(=, Piece, Capture) -> (setPiece(Board,X,Y,Player,NewBoard), capturePieceVertical(Board, Player, Capture, X, Y1, YLimit, NewBoard));
     capturePieceVertical(Board, Player, Capture, X, Y1, YLimit, NewBoard)).
+
+capturePieceDiagonal(Board, _, _, X, X, Y, Y, Board).
+
+capturePieceDiagonal(Board, Player, Capture, X, XLimit, Y, YLimit, NewBoard) :-
+    X1 is X + 1,
+    Y1 is Y + 1,
+    getPiece(Y,X,Board,Piece),
+    (compare(=, Piece, Capture) -> (setPiece(Board,X,Y,Player,TempBoard), capturePieceDiagonal(TempBoard, Player, Capture, X1, XLimit, Y1, YLimit, NewBoard));
+    capturePieceDiagonal(Board, Player, Capture, X1, XLimit, Y1, YLimit, NewBoard)).
                       
 % getLeftPiece(Board,X,Y,Player,XLeft) :-
 % getRep(Player,VX),
