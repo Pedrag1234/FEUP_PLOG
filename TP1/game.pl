@@ -20,7 +20,7 @@ play:-
     wallSetupPhase(B0, 8, B1),
     bonusSetupPhase(B1, 8, B2),
     jokerSetupPhase(B2, 1, B3),
-    capturePieceDiagonal(B3, black, white, 2, 6, 2, 6, B4),
+    capturePieceDiagonalDownLeft(B3, white, black, 7, 2, 2, 7, B4),
     playGame(B4, 0, 16, _).
 
 % display_game(+Board, +Player)
@@ -190,14 +190,23 @@ capturePieceVertical(Board, Player, Capture, X, Y, YLimit, NewBoard) :-
     (compare(=, Piece, Capture) -> (setPiece(Board,X,Y,Player,NewBoard), capturePieceVertical(Board, Player, Capture, X, Y1, YLimit, NewBoard));
     capturePieceVertical(Board, Player, Capture, X, Y1, YLimit, NewBoard)).
 
-capturePieceDiagonal(Board, _, _, X, X, Y, Y, Board).
+capturePieceDiagonalDownRight(Board, _, _, X, X, Y, Y, Board).
 
-capturePieceDiagonal(Board, Player, Capture, X, XLimit, Y, YLimit, NewBoard) :-
+capturePieceDiagonalDownRight(Board, Player, Capture, X, XLimit, Y, YLimit, NewBoard) :-
     X1 is X + 1,
     Y1 is Y + 1,
     getPiece(Y,X,Board,Piece),
-    (compare(=, Piece, Capture) -> (setPiece(Board,X,Y,Player,TempBoard), capturePieceDiagonal(TempBoard, Player, Capture, X1, XLimit, Y1, YLimit, NewBoard));
-    capturePieceDiagonal(Board, Player, Capture, X1, XLimit, Y1, YLimit, NewBoard)).
+    (compare(=, Piece, Capture) -> (setPiece(Board,X,Y,Player,TempBoard), capturePieceDiagonalDownRight(TempBoard, Player, Capture, X1, XLimit, Y1, YLimit, NewBoard));
+    capturePieceDiagonalDownRight(Board, Player, Capture, X1, XLimit, Y1, YLimit, NewBoard)).
+
+capturePieceDiagonalDownLeft(Board, _, _, X, X, Y, Y, Board).
+
+capturePieceDiagonalDownLeft(Board, Player, Capture, X, XLimit, Y, YLimit, NewBoard) :-
+    X1 is X - 1,
+    Y1 is Y + 1,
+    getPiece(Y,X,Board,Piece),
+    (compare(=, Piece, Capture) -> (setPiece(Board,X,Y,Player,TempBoard), capturePieceDiagonalDownLeft(TempBoard, Player, Capture, X1, XLimit, Y1, YLimit, NewBoard));
+    capturePieceDiagonalDownLeft(Board, Player, Capture, X1, XLimit, Y1, YLimit, NewBoard)).
                       
 % getLeftPiece(Board,X,Y,Player,XLeft) :-
 % getRep(Player,VX),
