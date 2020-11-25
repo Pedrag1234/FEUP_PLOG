@@ -20,8 +20,9 @@ play:-
     wallSetupPhase(B0, 8, B1),
     bonusSetupPhase(B1, 8, B2),
     jokerSetupPhase(B2, 1, B3),
-    getUpPiece(B3, white, 4, 7, YPiece, Found), nl,
+    getRightDownPiece(B3, white, 1, 1, XPiece, YPiece, Found), nl,
     write(Found), nl,
+    write(XPiece), nl,
     write(YPiece), nl,
     playGame(B3, 0, 16, _).
 
@@ -243,6 +244,41 @@ getUpPiece(Board, Player, X, Y, YPiece, Found) :-
     (compare(=, Piece, Player) -> (YPiece is Y1, Found is 1);
     getUpPiece(Board, Player, X, Y1, YPiece, Found)).
 
+getLeftUpPiece(_, _, 1, 1, _, _, 0).
+                      
+getLeftUpPiece(Board, Player, X, Y, XPiece, YPiece, Found) :-
+    X1 is X - 1,
+    Y1 is Y - 1,
+    getPiece(Y1, X1, Board, Piece),
+    (compare(=, Piece, Player) -> (XPiece is X1, YPiece is Y1, Found is 1);
+    getLeftUpPiece(Board, Player, X1, Y1, XPiece, YPiece, Found)).
+
+getLeftDownPiece(_, _, 1, 8, _, _, 0).
+                      
+getLeftDownPiece(Board, Player, X, Y, XPiece, YPiece, Found) :-
+    X1 is X - 1,
+    Y1 is Y + 1,
+    getPiece(Y1, X1, Board, Piece),
+    (compare(=, Piece, Player) -> (XPiece is X1, YPiece is Y1, Found is 1);
+    getLeftDownPiece(Board, Player, X1, Y1, XPiece, YPiece, Found)).
+
+getRightUpPiece(_, _, 8, 1, _, _, 0).
+                      
+getRightUpPiece(Board, Player, X, Y, XPiece, YPiece, Found) :-
+    X1 is X + 1,
+    Y1 is Y - 1,
+    getPiece(Y1, X1, Board, Piece),
+    (compare(=, Piece, Player) -> (XPiece is X1, YPiece is Y1, Found is 1);
+    getRightUpPiece(Board, Player, X1, Y1, XPiece, YPiece, Found)).
+
+getRightDownPiece(_, _, 8, 8, _, _, 0).
+                      
+getRightDownPiece(Board, Player, X, Y, XPiece, YPiece, Found) :-
+    X1 is X + 1,
+    Y1 is Y + 1,
+    getPiece(Y1, X1, Board, Piece),
+    (compare(=, Piece, Player) -> (XPiece is X1, YPiece is Y1, Found is 1);
+    getRightDownPiece(Board, Player, X1, Y1, XPiece, YPiece, Found)).
 
 validatePlay(Board,X,Y,Player):-
     X1 is X - 1,
