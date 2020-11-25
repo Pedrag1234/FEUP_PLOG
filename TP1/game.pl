@@ -20,8 +20,10 @@ play:-
     wallSetupPhase(B0, 8, B1),
     bonusSetupPhase(B1, 8, B2),
     jokerSetupPhase(B2, 1, B3),
-    capturePieceDiagonalDownLeft(B3, white, black, 7, 2, 2, 7, B4),
-    playGame(B4, 0, 16, _).
+    getLeftPiece(B3, black, 7, 4, XPiece, Found), nl,
+    write(Found), nl,
+    write(XPiece), nl,
+    playGame(B3, 0, 16, _).
 
 % display_game(+Board, +Player)
 % Displays the current game state, and announces next player turn
@@ -207,15 +209,14 @@ capturePieceDiagonalDownLeft(Board, Player, Capture, X, XLimit, Y, YLimit, NewBo
     getPiece(Y,X,Board,Piece),
     (compare(=, Piece, Capture) -> (setPiece(Board,X,Y,Player,TempBoard), capturePieceDiagonalDownLeft(TempBoard, Player, Capture, X1, XLimit, Y1, YLimit, NewBoard));
     capturePieceDiagonalDownLeft(Board, Player, Capture, X1, XLimit, Y1, YLimit, NewBoard)).
+
+getLeftPiece(_, _, 1, _, _, 0).
                       
-% getLeftPiece(Board,X,Y,Player,XLeft) :-
-% getRep(Player,VX),
-% getRep(black,VY),
-% compare(=, VX, VY),
-% X1 is X - 1,
-% getPiece(Y, X, Board, Piece),
-% compare(=, Piece, black) ; getLeftPiece(Board,X,Y,Player,XLeft),
-% !.
+getLeftPiece(Board, Player, X, Y, XPiece, Found) :-
+    X1 is X - 1,
+    getPiece(Y, X1, Board, Piece),
+    (compare(=, Piece, Player) -> (XPiece is X1, Found is 1);
+    getLeftPiece(Board, Player, X1, Y, XPiece, Found)).
 
 validatePlay(Board,X,Y,Player):-
     X1 is X - 1,
