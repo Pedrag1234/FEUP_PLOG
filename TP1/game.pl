@@ -46,6 +46,7 @@ makeTurn(Board, 1, NewBoard):-
 playGame(Board, _, 0, _):-
     printBoard(Board),
     write('Game Over!').
+
 playGame(Board, Player, Turns, NewBoard):-
     NewTurns is Turns - 1,
     PlayerNum is Player mod 2,
@@ -256,6 +257,24 @@ validatePlay(Board,X,Y,Player):-
     checkLeftDown(Board,X1,Y2, Player,0);
     checkRightUp(Board,X2,Y1, Player,0);
     checkRightDown(Board,X2,Y2, Player,0)).
+    
+
+
+canPlay(Board,Player).
+
+checkAllValidMoves(_,_,_,10,_).
+checkAllValidMoves(Board, Player, [H|T], Y, X):-
+    checkRowAllValidMoves(Board,Player,H,Y,X),
+    write('Y = '),write(Y),nl,
+    write(H),nl,
+    Y1 is Y + 1,
+    checkAllValidMoves(Board, Player, T, Y1, X).
+
+checkRowAllValidMoves(_,_,_,_,10).
+checkRowAllValidMoves(Board, Player, [H|T], Y, X):-
+    X1 is X + 1,
+    Point = [X,Y],
+    (validatePlay(Board,X,Y,Player) -> H = Point , checkRowAllValidMoves(Board,Player,T,Y,X1) ; H = null , checkRowAllValidMoves(Board,Player,T,Y,X1)).
     
 
 % checkLHorizontal(+Board,+NX,+NY,+Player)
@@ -499,3 +518,32 @@ checkRightDown(Board,X,Y, Player,N):-
     N1 is N + 1,
     checkRightDown(Board,X1,Y1, Player,N1)),
     !.
+
+
+isGameOver(_,_,10,_).
+isGameOver(_,_,_,2).
+
+isGameOver(Board,X,Y,Skips):-
+    checkRowEmptyPlaces(Board,X,Y),
+    Skips < 2,
+    Y1 is Y + 1,
+    isGameOver(Board,X,Y,Skips).
+
+checkRowEmptyPlaces(_,10,_).
+
+checkRowEmptyPlaces(Board,X,Y):-
+    getPiece(Y,X,Board,Piece),
+    getRep(Piece, Rep),
+    (compare(=, Rep, '.') -> fail),
+    X1 is X + 1,
+    checkRowEmptyPlaces(Board,X1,Y).
+    
+
+testValidMoves:-
+    initial(B0),
+    checkAllValidMoves(B0,black,Points,0,0),
+    write(Points).
+
+testGameOver:-
+    initial(B0),
+    (isGameOver(B0,0,0,0) -> write('Game is Over') ; write('Game is not Over')).
