@@ -46,6 +46,7 @@ makeTurn(Board, 1, NewBoard):-
 playGame(Board, _, 0, _):-
     printBoard(Board),
     write('Game Over!').
+
 playGame(Board, Player, Turns, NewBoard):-
     NewTurns is Turns - 1,
     PlayerNum is Player mod 2,
@@ -474,3 +475,26 @@ checkRightDown(Board,X,Y, Player,N):-
     N1 is N + 1,
     checkRightDown(Board,X1,Y1, Player,N1)),
     !.
+
+
+isGameOver(_,_,10,_).
+isGameOver(_,_,_,2).
+
+isGameOver(Board,X,Y,Skips):-
+    checkRowEmptyPlaces(Board,X,Y),
+    Skips < 2,
+    Y1 is Y + 1,
+    isGameOver(Board,X,Y,Skips).
+
+checkRowEmptyPlaces(_,10,_).
+
+checkRowEmptyPlaces(Board,X,Y):-
+    getPiece(Y,X,Board,Piece),
+    getRep(Piece, Rep),
+    (compare(=, Rep, '.') -> fail),
+    X1 is X + 1,
+    checkRowEmptyPlaces(Board,X1,Y).
+    
+testGameOver:-
+    initial(B0),
+    isGameOver(B0,0,0,0).
