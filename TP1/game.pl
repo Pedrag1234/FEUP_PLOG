@@ -262,20 +262,15 @@ validatePlay(Board,X,Y,Player):-
 
 canPlay(Board,Player).
 
+
 checkAllValidMoves(_,_,_,10,_).
 checkAllValidMoves(Board, Player, [H|T], Y, X):-
-    checkRowAllValidMoves(Board,Player,H,Y,X),
-    write('Y = '),write(Y),nl,
-    write(H),nl,
-    Y1 is Y + 1,
-    checkAllValidMoves(Board, Player, T, Y1, X).
+    (validatePlay(Board,X,Y,Player) -> H = [X,Y],MOVE is 0 ; MOVE is 1),
+    (compare(=,X,9) -> X1 is 0, Y1 is Y + 1; X1 is X + 1, Y1 is Y),
+    (compare(=,MOVE,0) -> checkAllValidMoves(Board, Player, T, Y1, X1) ; checkAllValidMoves(Board, Player, [H|T], Y1, X1)).
 
-checkRowAllValidMoves(_,_,_,_,10).
-checkRowAllValidMoves(Board, Player, [H|T], Y, X):-
-    X1 is X + 1,
-    Point = [X,Y],
-    (validatePlay(Board,X,Y,Player) -> H = Point , checkRowAllValidMoves(Board,Player,T,Y,X1) ; H = null , checkRowAllValidMoves(Board,Player,T,Y,X1)).
-    
+
+
 
 % checkLHorizontal(+Board,+NX,+NY,+Player)
 % checks if play is possible by checking all pieces to the left of the pos
