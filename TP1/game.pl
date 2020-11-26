@@ -245,6 +245,8 @@ capturePieceDown(Board, Player, Capture, X, Y, NewBoard) :-
     (compare(=, Piece2, Player) ; compare(=, Piece2, joker)),
     setPiece(Board,X,Y1,Player,NewBoard).
 
+capturePieceDown(Board, _, _, _, _, Board).
+
 % capturePieceLeftUp(+Board, +Player, +Capture, +X, +Y, -NewBoard)
 % Checks directly left and up for a piece of the opposite player, and captures it if possible
 capturePieceLeftUp(Board, _, _, _, 1, Board).
