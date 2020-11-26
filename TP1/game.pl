@@ -20,8 +20,7 @@ play:-
     wallSetupPhase(B0, 8, B1),
     bonusSetupPhase(B1, 8, B2),
     jokerSetupPhase(B2, 1, B3),
-    capturePieceLeft(B3, white, black, 6, 4, B4),
-    playGame(B4, 0, 16, _).
+    playGame(B3, 0, 16, _).
 
 % display_game(+Board, +Player)
 % Displays the current game state, and announces next player turn
