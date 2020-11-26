@@ -20,8 +20,7 @@ play:-
     wallSetupPhase(B0, 8, B1),
     bonusSetupPhase(B1, 8, B2),
     jokerSetupPhase(B2, 1, B3),
-    capturePieceLeft(B3, white, black, 6, 4, B4),
-    playGame(B4, 0, 16, _).
+    playGame(B3, 0, 16, _).
 
 % display_game(+Board, +Player)
 % Displays the current game state, and announces next player turn
@@ -138,13 +137,13 @@ bonusSetupPhase(Board, N, NewBoard):-
 % Places a black Disc (owned by player 1) on the board
 placeDiscPlayer1(Board, NewBoard):-
     readCoordinates('Disc', X, Y),
-    ((validateDiscInput(X,Y),validatePlay(Board,X,Y,black)) -> setPiece(Board,X,Y,black,NewBoard) ; write('Discs must be placed in the inner 8x8 square, input again\n'), nl, placeDiscPlayer1(Board,NewBoard)).
+    ((validateDiscInput(X,Y),validatePlay(Board,X,Y,black)) -> (setPiece(Board,X,Y,black,TempBoard), capturePieces(TempBoard, black, white, X, Y, NewBoard)) ; write('Discs must be placed in the inner 8x8 square, input again\n'), nl, placeDiscPlayer1(Board,NewBoard)).
 
 % placeDiscPlayer2(+Board, -NewBoard)
 % Places a white Disc (owned by player 2) on the board
 placeDiscPlayer2(Board, NewBoard):-
     readCoordinates('Disc', X, Y),
-    ((validateDiscInput(X,Y),validatePlay(Board,X,Y,white)) -> setPiece(Board,X,Y,white,NewBoard) ; write('Discs must be placed in the inner 8x8 square, input again\n'), nl, placeDiscPlayer2(Board,NewBoard)).
+    ((validateDiscInput(X,Y),validatePlay(Board,X,Y,white)) -> (setPiece(Board,X,Y,white,TempBoard), capturePieces(TempBoard, white, black, X, Y, NewBoard)) ; write('Discs must be placed in the inner 8x8 square, input again\n'), nl, placeDiscPlayer2(Board,NewBoard)).
 
 % placeJoker(+Board, -NewBoard)
 % Places a Joker on the board
@@ -174,6 +173,18 @@ initial(X):-
     createEmptyBoard(B0),
     setInitialPieces(B0,B1),
     X = B1.
+
+% capturePieces(+Board, +Player, +Capture, +X, +Y, -NewBoard)
+% Checks if there are capturable pieces in all possible directions, and captures them if possible
+capturePieces(Board, Player, Capture, X, Y, NewBoard) :-
+    capturePieceLeft(Board, Player, Capture, X, Y, TempBoard1),
+    capturePieceRight(TempBoard1, Player, Capture, X, Y, TempBoard2),
+    capturePieceUp(TempBoard2, Player, Capture, X, Y, TempBoard3),
+    capturePieceDown(TempBoard3, Player, Capture, X, Y, TempBoard4),
+    capturePieceLeftUp(TempBoard4, Player, Capture, X, Y, TempBoard5),
+    capturePieceLeftDown(TempBoard5, Player, Capture, X, Y, TempBoard6),
+    capturePieceRightUp(TempBoard6, Player, Capture, X, Y, TempBoard7),
+    capturePieceRightDown(TempBoard7, Player, Capture, X, Y, NewBoard).
 
 % capturePieceLeft(+Board, +Player, +Capture, +X, +Y, -NewBoard)
 % Checks directly left for a piece of the opposite player, and captures it if possible
@@ -233,6 +244,8 @@ capturePieceDown(Board, Player, Capture, X, Y, NewBoard) :-
     (compare(=, Piece2, Player) ; compare(=, Piece2, joker)),
     setPiece(Board,X,Y1,Player,NewBoard).
 
+capturePieceDown(Board, _, _, _, _, Board).
+
 % capturePieceLeftUp(+Board, +Player, +Capture, +X, +Y, -NewBoard)
 % Checks directly left and up for a piece of the opposite player, and captures it if possible
 capturePieceLeftUp(Board, _, _, _, 1, Board).
@@ -291,7 +304,7 @@ capturePieceRightUp(Board, Player, Capture, X, Y, NewBoard) :-
 capturePieceRightUp(Board, _, _, _, _, Board).
 
 % capturePieceRightDown(+Board, +Player, +Capture, +X, +Y, -NewBoard)
-% Checks directly right and up for a piece of the opposite player, and captures it if possible
+% Checks directly right and down for a piece of the opposite player, and captures it if possible
 capturePieceRightDown(Board, _, _, _, 8, Board).
 
 capturePieceRightDown(Board, _, _, 8, _, Board).
