@@ -20,11 +20,8 @@ play:-
     wallSetupPhase(B0, 8, B1),
     bonusSetupPhase(B1, 8, B2),
     jokerSetupPhase(B2, 1, B3),
-    getRightDownPiece(B3, white, 1, 1, XPiece, YPiece, Found), nl,
-    write(Found), nl,
-    write(XPiece), nl,
-    write(YPiece), nl,
-    playGame(B3, 0, 16, _).
+    capturePieceLeft(B3, white, black, 6, 4, B4),
+    playGame(B4, 0, 16, _).
 
 % display_game(+Board, +Player)
 % Displays the current game state, and announces next player turn
@@ -178,107 +175,35 @@ initial(X):-
     setInitialPieces(B0,B1),
     X = B1.
 
-capturePieceHorizontal(Board, _, _, X, X, _, Board).
+% capturePieceRight(+Board, +Player, +Capture, +X, +Y, -NewBoard)
+% Checks directly to the right for a piece of the opposite player, and captures it if possible
+capturePieceRight(Board, _, _, 8, _, Board).
 
-capturePieceHorizontal(Board, Player, Capture, X, XLimit, Y, NewBoard) :-
+capturePieceRight(Board, Player, Capture, X, Y, NewBoard) :-
     X1 is X + 1,
-    getPiece(Y,X,Board,Piece),
-    (compare(=, Piece, Capture) -> (setPiece(Board,X,Y,Player,TempBoard), capturePieceHorizontal(TempBoard, Player, Capture, X1, XLimit, Y, NewBoard));
-    capturePieceHorizontal(Board, Player, Capture, X1, XLimit, Y, NewBoard)).
+    getPiece(Y,X1,Board,Piece),
+    compare(=, Piece, Capture),
+    X2 is X + 2,
+    getPiece(Y,X2,Board,Piece2),
+    (compare(=, Piece2, Player) ; compare(=, Piece2, joker)),
+    setPiece(Board,X1,Y,Player,NewBoard).
 
-capturePieceVertical(Board, _, _, _, Y, Y, Board).
+capturePieceRight(Board, _, _, _, _, Board).
 
-capturePieceVertical(Board, Player, Capture, X, Y, YLimit, NewBoard) :-
-    Y1 is Y + 1,
-    getPiece(Y,X,Board,Piece),
-    (compare(=, Piece, Capture) -> (setPiece(Board,X,Y,Player,NewBoard), capturePieceVertical(Board, Player, Capture, X, Y1, YLimit, NewBoard));
-    capturePieceVertical(Board, Player, Capture, X, Y1, YLimit, NewBoard)).
+% capturePieceLeft(+Board, +Player, +Capture, +X, +Y, -NewBoard)
+% Checks directly to the left for a piece of the opposite player, and captures it if possible
+capturePieceLeft(Board, _, _, 1, _, Board).
 
-capturePieceDiagonalDownRight(Board, _, _, X, X, Y, Y, Board).
-
-capturePieceDiagonalDownRight(Board, Player, Capture, X, XLimit, Y, YLimit, NewBoard) :-
-    X1 is X + 1,
-    Y1 is Y + 1,
-    getPiece(Y,X,Board,Piece),
-    (compare(=, Piece, Capture) -> (setPiece(Board,X,Y,Player,TempBoard), capturePieceDiagonalDownRight(TempBoard, Player, Capture, X1, XLimit, Y1, YLimit, NewBoard));
-    capturePieceDiagonalDownRight(Board, Player, Capture, X1, XLimit, Y1, YLimit, NewBoard)).
-
-capturePieceDiagonalDownLeft(Board, _, _, X, X, Y, Y, Board).
-
-capturePieceDiagonalDownLeft(Board, Player, Capture, X, XLimit, Y, YLimit, NewBoard) :-
+capturePieceLeft(Board, Player, Capture, X, Y, NewBoard) :-
     X1 is X - 1,
-    Y1 is Y + 1,
-    getPiece(Y,X,Board,Piece),
-    (compare(=, Piece, Capture) -> (setPiece(Board,X,Y,Player,TempBoard), capturePieceDiagonalDownLeft(TempBoard, Player, Capture, X1, XLimit, Y1, YLimit, NewBoard));
-    capturePieceDiagonalDownLeft(Board, Player, Capture, X1, XLimit, Y1, YLimit, NewBoard)).
+    getPiece(Y,X1,Board,Piece),
+    compare(=, Piece, Capture),
+    X2 is X - 2,
+    getPiece(Y,X2,Board,Piece2),
+    (compare(=, Piece2, Player) ; compare(=, Piece2, joker)),
+    setPiece(Board,X1,Y,Player,NewBoard).
 
-getLeftPiece(_, _, 1, _, _, 0).
-                      
-getLeftPiece(Board, Player, X, Y, XPiece, Found) :-
-    X1 is X - 1,
-    getPiece(Y, X1, Board, Piece),
-    (compare(=, Piece, Player) -> (XPiece is X1, Found is 1);
-    getLeftPiece(Board, Player, X1, Y, XPiece, Found)).
-
-getRightPiece(_, _, 8, _, _, 0).
-                      
-getRightPiece(Board, Player, X, Y, XPiece, Found) :-
-    X1 is X + 1,
-    getPiece(Y, X1, Board, Piece),
-    (compare(=, Piece, Player) -> (XPiece is X1, Found is 1);
-    getRightPiece(Board, Player, X1, Y, XPiece, Found)).
-
-getDownPiece(_, _, _, 8, _, 0).
-                      
-getDownPiece(Board, Player, X, Y, YPiece, Found) :-
-    Y1 is Y + 1,
-    getPiece(Y1, X, Board, Piece),
-    (compare(=, Piece, Player) -> (YPiece is Y1, Found is 1);
-    getDownPiece(Board, Player, X, Y1, YPiece, Found)).
-
-getUpPiece(_, _, _, 1, _, 0).
-                      
-getUpPiece(Board, Player, X, Y, YPiece, Found) :-
-    Y1 is Y - 1,
-    getPiece(Y1, X, Board, Piece),
-    (compare(=, Piece, Player) -> (YPiece is Y1, Found is 1);
-    getUpPiece(Board, Player, X, Y1, YPiece, Found)).
-
-getLeftUpPiece(_, _, 1, 1, _, _, 0).
-                      
-getLeftUpPiece(Board, Player, X, Y, XPiece, YPiece, Found) :-
-    X1 is X - 1,
-    Y1 is Y - 1,
-    getPiece(Y1, X1, Board, Piece),
-    (compare(=, Piece, Player) -> (XPiece is X1, YPiece is Y1, Found is 1);
-    getLeftUpPiece(Board, Player, X1, Y1, XPiece, YPiece, Found)).
-
-getLeftDownPiece(_, _, 1, 8, _, _, 0).
-                      
-getLeftDownPiece(Board, Player, X, Y, XPiece, YPiece, Found) :-
-    X1 is X - 1,
-    Y1 is Y + 1,
-    getPiece(Y1, X1, Board, Piece),
-    (compare(=, Piece, Player) -> (XPiece is X1, YPiece is Y1, Found is 1);
-    getLeftDownPiece(Board, Player, X1, Y1, XPiece, YPiece, Found)).
-
-getRightUpPiece(_, _, 8, 1, _, _, 0).
-                      
-getRightUpPiece(Board, Player, X, Y, XPiece, YPiece, Found) :-
-    X1 is X + 1,
-    Y1 is Y - 1,
-    getPiece(Y1, X1, Board, Piece),
-    (compare(=, Piece, Player) -> (XPiece is X1, YPiece is Y1, Found is 1);
-    getRightUpPiece(Board, Player, X1, Y1, XPiece, YPiece, Found)).
-
-getRightDownPiece(_, _, 8, 8, _, _, 0).
-                      
-getRightDownPiece(Board, Player, X, Y, XPiece, YPiece, Found) :-
-    X1 is X + 1,
-    Y1 is Y + 1,
-    getPiece(Y1, X1, Board, Piece),
-    (compare(=, Piece, Player) -> (XPiece is X1, YPiece is Y1, Found is 1);
-    getRightDownPiece(Board, Player, X1, Y1, XPiece, YPiece, Found)).
+capturePieceLeft(Board, _, _, _, _, Board).
 
 validatePlay(Board,X,Y,Player):-
     X1 is X - 1,

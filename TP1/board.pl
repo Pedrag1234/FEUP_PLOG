@@ -7,9 +7,9 @@
 getRep(none,'.').
 getRep(white,'W').
 getRep(black,'B').
-getRep(wall,'G').
+getRep(wall,'#').
 getRep(joker,'J').
-getRep(bonus,'P').
+getRep(bonus,'+').
 getRep(_,_).
 
 % printRep(+Label)
