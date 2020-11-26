@@ -20,7 +20,7 @@ play:-
     wallSetupPhase(B0, 8, B1),
     bonusSetupPhase(B1, 8, B2),
     jokerSetupPhase(B2, 1, B3),
-    playGame(B3, 0, 16, _).
+    playGame(B3, 0, 16, _, 0, 0).
 
 % display_game(+Board, +Player)
 % Displays the current game state, and announces next player turn
@@ -32,25 +32,37 @@ display_game(Board, Player):-
 
 % makeTurn(+Board, +Player, -NewBoard)
 % Goes through a player's turn on the game
-makeTurn(Board, 0, NewBoard):-
-    placeDiscPlayer1(Board, NewBoard).
+makeTurn(Board, 0, NewBoard, Bonus):-
+    placeDiscPlayer1(Board, NewBoard,IsBonus),
+    Bonus is IsBonus,
+    write(Bonus).
 
-makeTurn(Board, 1, NewBoard):-
-    placeDiscPlayer2(Board, NewBoard).
+makeTurn(Board, 1, NewBoard, Bonus):-
+    placeDiscPlayer2(Board, NewBoard,IsBonus),
+    Bonus is IsBonus,
+    write(Bonus).
+
+
+printScore(Board,Player,Bonus):-
+    (compare(=,Player,black) -> getBlackPlayerScore(Board, N) ;  getWhitePlayerScore(Board,N)),
+    CurrentScore is N + Bonus,
+    write('Current Player Score is '),
+    write(CurrentScore), nl.
 
 % playGame(+Board, +Turns, -NewBoard)
 % Goes through each player's turn on the game
-playGame(Board, _, 0, _):-
+playGame(Board, _, 0, _ , _ , _):-
     printBoard(Board),
     write('Game Over!').
 
-playGame(Board, Player, Turns, NewBoard):-
+playGame(Board, Player, Turns, NewBoard, WScore, BScore):-
     NewTurns is Turns - 1,
     PlayerNum is Player mod 2,
     NewPlayer is Player + 1,
     display_game(Board, NewPlayer),
-    makeTurn(Board, PlayerNum, TempBoard),
-    playGame(TempBoard, NewPlayer, NewTurns, NewBoard).
+    makeTurn(Board, PlayerNum, TempBoard, Bonus),
+    (compare(=,NewPlayer,1) -> BScore1 is BScore + Bonus , WScore1 is WScore , printScore(TempBoard,black,Bonus); WScore1 is WScore + Bonus, BScore1 is BScore, printScore(TempBoard,white,Bonus)),
+    playGame(TempBoard, NewPlayer, NewTurns, NewBoard,WScore1,BScore1).
 
 % readInput(-Input)
 % Reads a char input by the player    
@@ -135,15 +147,15 @@ bonusSetupPhase(Board, N, NewBoard):-
 
 % placeDiscPlayer1(+Board, -NewBoard)
 % Places a black Disc (owned by player 1) on the board
-placeDiscPlayer1(Board, NewBoard):-
+placeDiscPlayer1(Board, NewBoard, IsBonus):-
     readCoordinates('Disc', X, Y),
-    ((validateDiscInput(X,Y),validatePlay(Board,X,Y,black)) -> (setPiece(Board,X,Y,black,TempBoard), capturePieces(TempBoard, black, white, X, Y, NewBoard)) ; write('Discs must be placed in the inner 8x8 square, input again\n'), nl, placeDiscPlayer1(Board,NewBoard)).
+    ((validateDiscInput(X,Y),validatePlay(Board,X,Y,black)) -> (getPiece(Y,X,Board,Piece), (compare(=,Piece,Bonus) -> IsBonus is 5; IsBonus is 0) ,setPiece(Board,X,Y,black,TempBoard), capturePieces(TempBoard, black, white, X, Y, NewBoard)) ; write('Invalid Move Try Again\n'), nl, placeDiscPlayer1(Board,NewBoard, IsBonus)).
 
 % placeDiscPlayer2(+Board, -NewBoard)
 % Places a white Disc (owned by player 2) on the board
-placeDiscPlayer2(Board, NewBoard):-
+placeDiscPlayer2(Board, NewBoard, IsBonus):-
     readCoordinates('Disc', X, Y),
-    ((validateDiscInput(X,Y),validatePlay(Board,X,Y,white)) -> (setPiece(Board,X,Y,white,TempBoard), capturePieces(TempBoard, white, black, X, Y, NewBoard)) ; write('Discs must be placed in the inner 8x8 square, input again\n'), nl, placeDiscPlayer2(Board,NewBoard)).
+    ((validateDiscInput(X,Y),validatePlay(Board,X,Y,white)) -> (getPiece(Y,X,Board,Piece), (compare(=,Piece,Bonus) -> IsBonus is 5; IsBonus is 0), setPiece(Board,X,Y,white,TempBoard), capturePieces(TempBoard, white, black, X, Y, NewBoard)) ; write('Invalid Move Try Again\n'), nl, placeDiscPlayer2(Board,NewBoard, IsBonus)).
 
 % placeJoker(+Board, -NewBoard)
 % Places a Joker on the board
