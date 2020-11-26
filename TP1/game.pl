@@ -322,6 +322,8 @@ capturePieceRightDown(Board, Player, Capture, X, Y, NewBoard) :-
 
 capturePieceRightDown(Board, _, _, _, _, Board).
 
+% validatePlay(+Board,+X,+Y,+Player)
+% checks if play made by the player is valid
 validatePlay(Board,X,Y,Player):-
     X1 is X - 1,
     X2 is X + 1,
@@ -335,14 +337,17 @@ validatePlay(Board,X,Y,Player):-
     checkLeftDown(Board,X1,Y2, Player,0);
     checkRightUp(Board,X2,Y1, Player,0);
     checkRightDown(Board,X2,Y2, Player,0)).
-    
+
+% canPlay(+Board, +Player)
+% checks if the player can make any plays    
 canPlay(Board,Player):-
     checkAllValidMoves(Board,PLayer,Points,0,0),
     length(Points,N),
     N1 is N - 1,
     (compare(=,N1,0) -> fail).
 
-
+% checkAllValidMoves(+Board, +Player, -Table, +Y, +X)
+% returns an array with all possible plays   
 checkAllValidMoves(_,_,_,10,_).
 checkAllValidMoves(Board, Player, [H|T], Y, X):-
     (validatePlay(Board,X,Y,Player) -> H = [X,Y],MOVE is 0 ; MOVE is 1),
@@ -352,7 +357,7 @@ checkAllValidMoves(Board, Player, [H|T], Y, X):-
 
 
 
-% checkLHorizontal(+Board,+NX,+NY,+Player)
+% checkLeft(+Board,+X,+Y, +Player,+N)
 % checks if play is possible by checking all pieces to the left of the pos
 checkLeft(Board,X,Y, Player,N):-
     getRep(Player,VX),
@@ -383,7 +388,9 @@ checkLeft(Board,X,Y, Player,N):-
     N1 is N + 1,
     checkLeft(Board,X1,Y, Player,N1)),
     !.
-        
+
+% checkRight(+Board,+X,+Y, +Player,+N)
+% checks if play is possible by checking all pieces to the right of the pos        
 checkRight(Board,X,Y, Player,N):-
     getRep(Player,VX),
     getRep(black,VY),
@@ -414,6 +421,8 @@ checkRight(Board,X,Y, Player,N):-
     checkRight(Board,X1,Y, Player,N1)),
     !.
 
+% checkUp(+Board,+X,+Y, +Player,+N)
+% checks if play is possible by checking all pieces to the above of the pos
 checkUp(Board,X,Y, Player,N):-
     getRep(Player,VX),
     getRep(black,VY),
@@ -444,6 +453,8 @@ checkUp(Board,X,Y, Player,N):-
     checkUp(Board,X,Y1, Player,N1)),
     !. 
 
+% checkDown(+Board,+X,+Y, +Player,+N)
+% checks if play is possible by checking all pieces to the bellow of the pos
 checkDown(Board,X,Y, Player,N):-
     getRep(Player,VX),
     getRep(black,VY),
@@ -474,6 +485,8 @@ checkDown(Board,X,Y, Player,N):-
     checkDown(Board,X,Y1, Player,N1)),
     !.
 
+% checkLeftUp(+Board,+X,+Y, +Player,+N)
+% checks if play is possible by checking all pieces diagonally up to the left of the pos
 checkLeftUp(Board,X,Y, Player,N):-
     getRep(Player,VX),
     getRep(black,VY),
@@ -508,6 +521,8 @@ checkLeftUp(Board,X,Y, Player,N):-
     checkLeftUp(Board,X1,Y1, Player,N1)),
     !. 
 
+% checkLeftDown(+Board,+X,+Y, +Player,+N)
+% checks if play is possible by checking all pieces diagonally down to the left of the pos
 checkLeftDown(Board,X,Y, Player,N):-
     getRep(Player,VX),
     getRep(black,VY),
@@ -542,6 +557,8 @@ checkLeftDown(Board,X,Y, Player,N):-
     checkLeftDown(Board,X1,Y1, Player,N1)),
     !.
 
+% checkRightUp(+Board,+X,+Y, +Player,+N)
+% checks if play is possible by checking all pieces diagonally up to the right of the pos
 checkRightUp(Board,X,Y, Player,N):-
     getRep(Player,VX),
     getRep(black,VY),
@@ -576,6 +593,8 @@ checkRightUp(Board,X,Y, Player,N):-
     checkRightUp(Board,X1,Y1, Player,N1)),
     !.
 
+% checkRightUp(+Board,+X,+Y, +Player,+N)
+% checks if play is possible by checking all pieces diagonally down to the right of the pos
 checkRightDown(Board,X,Y, Player,N):-
     getRep(Player,VX),
     getRep(black,VY),
@@ -611,17 +630,19 @@ checkRightDown(Board,X,Y, Player,N):-
     !.
 
 
+% isGameOver(Board,X,Y,Skips)
+% checks if the game is over
 isGameOver(_,_,10,_).
 isGameOver(_,_,_,2).
-
 isGameOver(Board,X,Y,Skips):-
     checkRowEmptyPlaces(Board,X,Y),
     Skips < 2,
     Y1 is Y + 1,
     isGameOver(Board,X,Y,Skips).
 
+% checkRowEmptyPlaces(+Board,+X,+Y)
+% checks there is a cell empty in the row
 checkRowEmptyPlaces(_,10,_).
-
 checkRowEmptyPlaces(Board,X,Y):-
     getPiece(Y,X,Board,Piece),
     getRep(Piece, Rep),
@@ -646,7 +667,6 @@ testValidMoves:-
     length(Points, N),
     write(N),nl.
     
-
 
 testGameOver:-
     initial(B0),
