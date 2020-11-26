@@ -175,8 +175,23 @@ initial(X):-
     setInitialPieces(B0,B1),
     X = B1.
 
+% capturePieceLeft(+Board, +Player, +Capture, +X, +Y, -NewBoard)
+% Checks directly left for a piece of the opposite player, and captures it if possible
+capturePieceLeft(Board, _, _, 1, _, Board).
+
+capturePieceLeft(Board, Player, Capture, X, Y, NewBoard) :-
+    X1 is X - 1,
+    getPiece(Y,X1,Board,Piece),
+    compare(=, Piece, Capture),
+    X2 is X - 2,
+    getPiece(Y,X2,Board,Piece2),
+    (compare(=, Piece2, Player) ; compare(=, Piece2, joker)),
+    setPiece(Board,X1,Y,Player,NewBoard).
+
+capturePieceLeft(Board, _, _, _, _, Board).
+
 % capturePieceRight(+Board, +Player, +Capture, +X, +Y, -NewBoard)
-% Checks directly to the right for a piece of the opposite player, and captures it if possible
+% Checks directly right for a piece of the opposite player, and captures it if possible
 capturePieceRight(Board, _, _, 8, _, Board).
 
 capturePieceRight(Board, Player, Capture, X, Y, NewBoard) :-
@@ -190,20 +205,109 @@ capturePieceRight(Board, Player, Capture, X, Y, NewBoard) :-
 
 capturePieceRight(Board, _, _, _, _, Board).
 
-% capturePieceLeft(+Board, +Player, +Capture, +X, +Y, -NewBoard)
-% Checks directly to the left for a piece of the opposite player, and captures it if possible
-capturePieceLeft(Board, _, _, 1, _, Board).
+% capturePieceUp(+Board, +Player, +Capture, +X, +Y, -NewBoard)
+% Checks directly up for a piece of the opposite player, and captures it if possible
+capturePieceUp(Board, _, _, _, 1, Board).
 
-capturePieceLeft(Board, Player, Capture, X, Y, NewBoard) :-
+capturePieceUp(Board, Player, Capture, X, Y, NewBoard) :-
+    Y1 is Y - 1,
+    getPiece(Y1,X,Board,Piece),
+    compare(=, Piece, Capture),
+    Y2 is Y - 2,
+    getPiece(Y2,X,Board,Piece2),
+    (compare(=, Piece2, Player) ; compare(=, Piece2, joker)),
+    setPiece(Board,X,Y1,Player,NewBoard).
+
+capturePieceUp(Board, _, _, _, _, Board).
+
+% capturePieceDown(+Board, +Player, +Capture, +X, +Y, -NewBoard)
+% Checks directly down for a piece of the opposite player, and captures it if possible
+capturePieceDown(Board, _, _, _, 8, Board).
+
+capturePieceDown(Board, Player, Capture, X, Y, NewBoard) :-
+    Y1 is Y + 1,
+    getPiece(Y1,X,Board,Piece),
+    compare(=, Piece, Capture),
+    Y2 is Y + 2,
+    getPiece(Y2,X,Board,Piece2),
+    (compare(=, Piece2, Player) ; compare(=, Piece2, joker)),
+    setPiece(Board,X,Y1,Player,NewBoard).
+
+% capturePieceLeftUp(+Board, +Player, +Capture, +X, +Y, -NewBoard)
+% Checks directly left and up for a piece of the opposite player, and captures it if possible
+capturePieceLeftUp(Board, _, _, _, 1, Board).
+
+capturePieceLeftUp(Board, _, _, 1, _, Board).
+
+capturePieceLeftUp(Board, Player, Capture, X, Y, NewBoard) :-
     X1 is X - 1,
-    getPiece(Y,X1,Board,Piece),
+    Y1 is Y - 1,
+    getPiece(Y1,X1,Board,Piece),
     compare(=, Piece, Capture),
     X2 is X - 2,
-    getPiece(Y,X2,Board,Piece2),
+    Y2 is Y - 2,
+    getPiece(Y2,X2,Board,Piece2),
     (compare(=, Piece2, Player) ; compare(=, Piece2, joker)),
-    setPiece(Board,X1,Y,Player,NewBoard).
+    setPiece(Board,X1,Y1,Player,NewBoard).
 
-capturePieceLeft(Board, _, _, _, _, Board).
+capturePieceLeftUp(Board, _, _, _, _, Board).
+
+% capturePieceLeftDown(+Board, +Player, +Capture, +X, +Y, -NewBoard)
+% Checks directly left and down for a piece of the opposite player, and captures it if possible
+capturePieceLeftDown(Board, _, _, _, 8, Board).
+
+capturePieceLeftDown(Board, _, _, 1, _, Board).
+
+capturePieceLeftDown(Board, Player, Capture, X, Y, NewBoard) :-
+    X1 is X - 1,
+    Y1 is Y + 1,
+    getPiece(Y1,X1,Board,Piece),
+    compare(=, Piece, Capture),
+    X2 is X - 2,
+    Y2 is Y + 2,
+    getPiece(Y2,X2,Board,Piece2),
+    (compare(=, Piece2, Player) ; compare(=, Piece2, joker)),
+    setPiece(Board,X1,Y1,Player,NewBoard).
+
+capturePieceLeftDown(Board, _, _, _, _, Board).
+
+% capturePieceRightUp(+Board, +Player, +Capture, +X, +Y, -NewBoard)
+% Checks directly right and up for a piece of the opposite player, and captures it if possible
+capturePieceRightUp(Board, _, _, _, 1, Board).
+
+capturePieceRightUp(Board, _, _, 8, _, Board).
+
+capturePieceRightUp(Board, Player, Capture, X, Y, NewBoard) :-
+    X1 is X + 1,
+    Y1 is Y - 1,
+    getPiece(Y1,X1,Board,Piece),
+    compare(=, Piece, Capture),
+    X2 is X + 2,
+    Y2 is Y - 2,
+    getPiece(Y2,X2,Board,Piece2),
+    (compare(=, Piece2, Player) ; compare(=, Piece2, joker)),
+    setPiece(Board,X1,Y1,Player,NewBoard).
+
+capturePieceRightUp(Board, _, _, _, _, Board).
+
+% capturePieceRightDown(+Board, +Player, +Capture, +X, +Y, -NewBoard)
+% Checks directly right and up for a piece of the opposite player, and captures it if possible
+capturePieceRightDown(Board, _, _, _, 8, Board).
+
+capturePieceRightDown(Board, _, _, 8, _, Board).
+
+capturePieceRightDown(Board, Player, Capture, X, Y, NewBoard) :-
+    X1 is X + 1,
+    Y1 is Y + 1,
+    getPiece(Y1,X1,Board,Piece),
+    compare(=, Piece, Capture),
+    X2 is X + 2,
+    Y2 is Y + 2,
+    getPiece(Y2,X2,Board,Piece2),
+    (compare(=, Piece2, Player) ; compare(=, Piece2, joker)),
+    setPiece(Board,X1,Y1,Player,NewBoard).
+
+capturePieceRightDown(Board, _, _, _, _, Board).
 
 validatePlay(Board,X,Y,Player):-
     X1 is X - 1,
@@ -219,8 +323,6 @@ validatePlay(Board,X,Y,Player):-
     checkRightUp(Board,X2,Y1, Player,0);
     checkRightDown(Board,X2,Y2, Player,0)).
     
-
-
 canPlay(Board,Player):-
     checkAllValidMoves(Board,PLayer,Points,0,0),
     length(Points,N),
