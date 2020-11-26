@@ -651,6 +651,46 @@ checkRowEmptyPlaces(Board,X,Y):-
     checkRowEmptyPlaces(Board,X1,Y).
     
 
+getBlackPlayerScore(Board,N):-
+    getAllBlackRowsScores(Board,0,0,Scores),
+    sumlist(Scores,CombScores),
+    N = CombScores.
+
+getWhitePlayerScore(Board,N):-
+    getAllWhiteRowsScores(Board,0,0,Scores),
+    sumlist(Scores,CombScores),
+    N = CombScores.
+
+getAllBlackRowsScores(_,_,10,_).
+getAllBlackRowsScores(Board,X,Y,[H|T]):-
+    Y1 is Y + 1,
+    getBlackRowScore(X,Y,Board,RowScore),
+    sumlist(RowScore,N),
+    H = N,
+    getAllBlackRowsScores(Board,X,Y1,T).
+
+getAllWhiteRowsScores(_,_,10,_).
+getAllWhiteRowsScores(Board,X,Y,[H|T]):-
+    Y1 is Y + 1,
+    getWhiteRowScore(X,Y,Board,RowScore),
+    sumlist(RowScore,N),
+    H = N,
+    getAllWhiteRowsScores(Board,X,Y1,T).
+
+getBlackRowScore(10,_,_,_).
+getBlackRowScore(X,Y,Board,[H|T]):-
+    X1 is X + 1,
+    getPiece(Y,X,Board,Piece),
+    (compare(=,Piece,black) -> H = 1 , getBlackRowScore(X1,Y,Board,T); H = 0, getBlackRowScore(X1,Y,Board,T)).
+
+getWhiteRowScore(10,_,_,_).
+getWhiteRowScore(X,Y,Board,[H|T]):-
+    X1 is X + 1,
+    getPiece(Y,X,Board,Piece),
+    (compare(=,Piece,white) -> H = 1 , getWhiteRowScore(X1,Y,Board,T); H = 0, getWhiteRowScore(X1,Y,Board,T)).
+
+
+
 testCanMove:-
     initial(B0),
     wallSetupPhase(B0, 8, B1),
@@ -667,6 +707,14 @@ testValidMoves:-
     length(Points, N),
     write(N),nl.
     
+testCalculateScores:-
+    initial(B0),
+    wallSetupPhase(B0, 8, B1),
+    bonusSetupPhase(B1, 8, B2),
+    getBlackPlayerScore(B2,N1),
+    getWhitePlayerScore(B2,N2),
+    write('Test 1 = '), write(N1), nl,
+    write('Test 2 = '), write(N2), nl.
 
 testGameOver:-
     initial(B0),
