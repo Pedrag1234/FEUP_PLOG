@@ -33,7 +33,7 @@ setupPvP:-
     wallSetupPhase(B0, 8, B1),
     bonusSetupPhase(B1, 8, B2),
     jokerSetupPhase(B2, 8, B3),
-    playGame(B3, 0, 16, _).
+    playPvPGame(B3, 0, 16, _).
 
 % setupPvC
 % Starts a new Player vs CPU game
@@ -44,7 +44,7 @@ setupPvC:-
     wallSetupPhase(B0, 8, B1),
     bonusSetupPhase(B1, 8, B2),
     jokerSetupPhase(B2, 8, B3),
-    playGame(B3, 0, 16, _).
+    playPvCGame(B3, 0, 16, _).
 
 % display_game(+Board, +Player)
 % Displays the current game state, and announces next player turn
@@ -70,19 +70,36 @@ makeCPUTurn(Board, 0, NewBoard):-
 makeCPUTurn(Board, 1, NewBoard):-
     placeDiscCPU2(Board, NewBoard).
 
-% playGame(+Board, +Turns, -NewBoard)
+% playPvPGame(+Board, +Turns, -NewBoard)
 % Goes through each player's turn on the game
-playGame(Board, _, 0, _):-
+playPvPGame(Board, _, 0, _):-
     printBoard(Board),
     write('Game Over!').
 
-playGame(Board, Player, Turns, NewBoard):-
+playPvPGame(Board, Player, Turns, NewBoard):-
     NewTurns is Turns - 1,
     PlayerNum is Player mod 2,
     NewPlayer is Player + 1,
-    display_game(Board, NewPlayer),
+    PlayerDisplay is PlayerNum + 1,
+    display_game(Board, PlayerDisplay),
     makePlayerTurn(Board, PlayerNum, TempBoard),
-    playGame(TempBoard, NewPlayer, NewTurns, NewBoard).
+    playPvPGame(TempBoard, NewPlayer, NewTurns, NewBoard).
+
+% playPvCGame(+Board, +Turns, -NewBoard)
+% Alternates through the player and the CPU's turn on the game
+playPvCGame(Board, _, 0, _):-
+    printBoard(Board),
+    write('Game Over!').
+
+playPvCGame(Board, Player, Turns, NewBoard):-
+    NewTurns is Turns - 1,
+    PlayerNum is Player mod 2,
+    NewPlayer is Player + 1,
+    PlayerDisplay is PlayerNum + 1,
+    display_game(Board, PlayerDisplay),
+    ((compare(=, PlayerNum, 0), makePlayerTurn(Board, PlayerNum, TempBoard));
+    (compare(=, PlayerNum, 1), makeCPUTurn(Board, PlayerNum, TempBoard))),
+    playPvCGame(TempBoard, NewPlayer, NewTurns, NewBoard).
 
 % readInput(-Input)
 % Reads a char input by the player    
