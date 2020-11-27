@@ -45,6 +45,7 @@ makeTurn(Board, 1, NewBoard, Bonus):-
 
 printScore(Board,Player,Bonus):-
     (compare(=,Player,black) -> getBlackPlayerScore(Board, N) ;  getWhitePlayerScore(Board,N)),
+    write('Without Bonus is '), write(N), nl,
     CurrentScore is N + Bonus,
     write('Current Player Score is '),
     write(CurrentScore), nl.
@@ -149,13 +150,16 @@ bonusSetupPhase(Board, N, NewBoard):-
 % Places a black Disc (owned by player 1) on the board
 placeDiscPlayer1(Board, NewBoard, IsBonus):-
     readCoordinates('Disc', X, Y),
-    ((validateDiscInput(X,Y),validatePlay(Board,X,Y,black)) -> (getPiece(Y,X,Board,Piece), (compare(=,Piece,bonus) -> IsBonus is 5; IsBonus is 0) ,setPiece(Board,X,Y,black,TempBoard), capturePieces(TempBoard, black, white, X, Y, NewBoard)) ; write('Invalid Move Try Again\n'), nl, placeDiscPlayer1(Board,NewBoard, IsBonus)).
+    ((validateDiscInput(X,Y),validatePlay(Board,X,Y,black)) -> (getPiece(Y,X,Board,Piece), setPiece(Board,X,Y,black,TempBoard), capturePieces(TempBoard, black, white, X, Y, NewBoard)) ; write('Invalid Move Try Again\n'), nl, placeDiscPlayer1(Board,NewBoard, IsBonus)),
+    (compare(=,Piece,bonus) -> IsBonus is 5; IsBonus is 0).
 
 % placeDiscPlayer2(+Board, -NewBoard)
 % Places a white Disc (owned by player 2) on the board
 placeDiscPlayer2(Board, NewBoard, IsBonus):-
     readCoordinates('Disc', X, Y),
-    ((validateDiscInput(X,Y),validatePlay(Board,X,Y,white)) -> (getPiece(Y,X,Board,Piece), (compare(=,Piece,bonus) -> IsBonus is 5; IsBonus is 0), setPiece(Board,X,Y,white,TempBoard), capturePieces(TempBoard, white, black, X, Y, NewBoard)) ; write('Invalid Move Try Again\n'), nl, placeDiscPlayer2(Board,NewBoard, IsBonus)).
+    ((validateDiscInput(X,Y),validatePlay(Board,X,Y,white)) -> (getPiece(Y,X,Board,Piece),  setPiece(Board,X,Y,white,TempBoard), capturePieces(TempBoard, white, black, X, Y, NewBoard)) ; write('Invalid Move Try Again\n'), nl, placeDiscPlayer2(Board,NewBoard, IsBonus)),
+    (compare(=,Piece,bonus) -> IsBonus is 5; IsBonus is 0).
+
 
 % placeJoker(+Board, -NewBoard)
 % Places a Joker on the board
@@ -666,11 +670,15 @@ checkRowEmptyPlaces(Board,X,Y):-
 getBlackPlayerScore(Board,N):-
     getAllBlackRowsScores(Board,0,0,Scores),
     sumlist(Scores,CombScores),
+    write('List of black pieces in the board = '),write(Scores),nl,
+    write('Their Sum = '),write(CombScores),nl,
     N = CombScores.
 
 getWhitePlayerScore(Board,N):-
     getAllWhiteRowsScores(Board,0,0,Scores),
     sumlist(Scores,CombScores),
+    write('List of white pieces in the board = '),write(Scores),nl,
+    write('Their Sum = '),write(CombScores),nl,
     N = CombScores.
 
 getAllBlackRowsScores(_,_,10,_).
