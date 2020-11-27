@@ -14,12 +14,36 @@ initRandom:-
 % play
 % Starts a new game
 play:-
+    nl, write('###############'), nl,
+    write('##  Mapello  ##'), nl,
+    write('###############'), nl, nl,
+    write('1 - Player vs Player'), nl,
+    write('2 - Player vs CPU'), nl, nl,
+    readOption(Input),
+    ((compare(=, Input, 1), setupPvP);
+    (compare(=, Input, 2), setupPvC);
+    (nl, write('Please input 1 or 2, to select the game mode'), nl, play)).
+
+% setupPvP
+% Starts a new Player vs Player game
+setupPvP:-
     initRandom,
     initial(B0),
     nl, write('Performing random Wall and Bonus pieces placement'), nl,
     wallSetupPhase(B0, 8, B1),
     bonusSetupPhase(B1, 8, B2),
-    jokerSetupPhase(B2, 1, B3),
+    jokerSetupPhase(B2, 8, B3),
+    playGame(B3, 0, 16, _).
+
+% setupPvC
+% Starts a new Player vs CPU game
+setupPvC:-
+    initRandom,
+    initial(B0),
+    nl, write('Performing random Wall and Bonus pieces placement'), nl,
+    wallSetupPhase(B0, 8, B1),
+    bonusSetupPhase(B1, 8, B2),
+    jokerSetupPhase(B2, 8, B3),
     playGame(B3, 0, 16, _).
 
 % display_game(+Board, +Player)
@@ -30,13 +54,21 @@ display_game(Board, Player):-
     write(Player),
     write(' Turn'), nl.
 
-% makeTurn(+Board, +Player, -NewBoard)
+% makePlayerTurn(+Board, +Player, -NewBoard)
 % Goes through a player's turn on the game
-makeTurn(Board, 0, NewBoard):-
+makePlayerTurn(Board, 0, NewBoard):-
     placeDiscPlayer1(Board, NewBoard).
 
-makeTurn(Board, 1, NewBoard):-
+makePlayerTurn(Board, 1, NewBoard):-
     placeDiscPlayer2(Board, NewBoard).
+
+% makeCPUTurn(+Board, +Player, -NewBoard)
+% Goes through a CPU's turn on the game
+makeCPUTurn(Board, 0, NewBoard):-
+    placeDiscCPU1(Board, NewBoard).
+
+makeCPUTurn(Board, 1, NewBoard):-
+    placeDiscCPU2(Board, NewBoard).
 
 % playGame(+Board, +Turns, -NewBoard)
 % Goes through each player's turn on the game
@@ -49,7 +81,7 @@ playGame(Board, Player, Turns, NewBoard):-
     PlayerNum is Player mod 2,
     NewPlayer is Player + 1,
     display_game(Board, NewPlayer),
-    makeTurn(Board, PlayerNum, TempBoard),
+    makePlayerTurn(Board, PlayerNum, TempBoard),
     playGame(TempBoard, NewPlayer, NewTurns, NewBoard).
 
 % readInput(-Input)
@@ -75,6 +107,14 @@ readCoordinates(PieceStr, X, Y):-
     nth0(0, Xinput, Xchar), 
     nth0(0, Yinput, Ychar),
     number_chars(X, [Xchar]), number_chars(Y, [Ychar]).
+
+% readOption(-Option)
+% Reads game mode option input by the player, used to initiate the game
+readOption(Option):-
+    write('Select game mode: '),
+    readInput(Input),
+    nth0(0, Input, Inputchar), 
+    number_chars(Option, [Inputchar]).
 
 % checkInput(+PieceStr, +X, +Y)
 % Checks if the coordinates used are valid for the given piece
@@ -144,6 +184,15 @@ placeDiscPlayer1(Board, NewBoard):-
 placeDiscPlayer2(Board, NewBoard):-
     readCoordinates('Disc', X, Y),
     ((validateDiscInput(X,Y),validatePlay(Board,X,Y,white)) -> (setPiece(Board,X,Y,white,TempBoard), capturePieces(TempBoard, white, black, X, Y, NewBoard)) ; write('Discs must be placed in the inner 8x8 square, input again\n'), nl, placeDiscPlayer2(Board,NewBoard)).
+
+% placeDiscCPU1(+Board, -NewBoard)
+% Places a black Disc (owned by a CPU player 1) on the board
+placeDiscCPU1(Board, NewBoard):-
+    !.
+% placeDiscCPU2(+Board, -NewBoard)
+% Places a white Disc (owned by a CPU player 2) on the board
+placeDiscCPU2(Board, NewBoard):-
+    !.
 
 % placeJoker(+Board, -NewBoard)
 % Places a Joker on the board
