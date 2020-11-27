@@ -61,7 +61,7 @@ playGame(Board, Player, Turns, NewBoard, WScore, BScore):-
     NewPlayer is Player + 1,
     display_game(Board, NewPlayer),
     makeTurn(Board, PlayerNum, TempBoard, Bonus),
-    (compare(=,NewPlayer,1) -> BScore1 is BScore + Bonus , WScore1 is WScore , printScore(TempBoard,black,Bonus); WScore1 is WScore + Bonus, BScore1 is BScore, printScore(TempBoard,white,Bonus)),
+    (compare(=,NewPlayer,1) -> BScore1 is BScore + Bonus , WScore1 is WScore , printScore(TempBoard,black,BScore1); WScore1 is WScore + Bonus, BScore1 is BScore, printScore(TempBoard,white,WScore1)),
     playGame(TempBoard, NewPlayer, NewTurns, NewBoard,WScore1,BScore1).
 
 % readInput(-Input)
@@ -149,13 +149,13 @@ bonusSetupPhase(Board, N, NewBoard):-
 % Places a black Disc (owned by player 1) on the board
 placeDiscPlayer1(Board, NewBoard, IsBonus):-
     readCoordinates('Disc', X, Y),
-    ((validateDiscInput(X,Y),validatePlay(Board,X,Y,black)) -> (getPiece(Y,X,Board,Piece), (compare(=,Piece,Bonus) -> IsBonus is 5; IsBonus is 0) ,setPiece(Board,X,Y,black,TempBoard), capturePieces(TempBoard, black, white, X, Y, NewBoard)) ; write('Invalid Move Try Again\n'), nl, placeDiscPlayer1(Board,NewBoard, IsBonus)).
+    ((validateDiscInput(X,Y),validatePlay(Board,X,Y,black)) -> (getPiece(Y,X,Board,Piece), (compare(=,Piece,bonus) -> IsBonus is 5; IsBonus is 0) ,setPiece(Board,X,Y,black,TempBoard), capturePieces(TempBoard, black, white, X, Y, NewBoard)) ; write('Invalid Move Try Again\n'), nl, placeDiscPlayer1(Board,NewBoard, IsBonus)).
 
 % placeDiscPlayer2(+Board, -NewBoard)
 % Places a white Disc (owned by player 2) on the board
 placeDiscPlayer2(Board, NewBoard, IsBonus):-
     readCoordinates('Disc', X, Y),
-    ((validateDiscInput(X,Y),validatePlay(Board,X,Y,white)) -> (getPiece(Y,X,Board,Piece), (compare(=,Piece,Bonus) -> IsBonus is 5; IsBonus is 0), setPiece(Board,X,Y,white,TempBoard), capturePieces(TempBoard, white, black, X, Y, NewBoard)) ; write('Invalid Move Try Again\n'), nl, placeDiscPlayer2(Board,NewBoard, IsBonus)).
+    ((validateDiscInput(X,Y),validatePlay(Board,X,Y,white)) -> (getPiece(Y,X,Board,Piece), (compare(=,Piece,bonus) -> IsBonus is 5; IsBonus is 0), setPiece(Board,X,Y,white,TempBoard), capturePieces(TempBoard, white, black, X, Y, NewBoard)) ; write('Invalid Move Try Again\n'), nl, placeDiscPlayer2(Board,NewBoard, IsBonus)).
 
 % placeJoker(+Board, -NewBoard)
 % Places a Joker on the board
