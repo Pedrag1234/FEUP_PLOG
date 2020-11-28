@@ -19,6 +19,7 @@ play:-
     write('###############'), nl, nl,
     write('1 - Player vs Player'), nl,
     write('2 - Player vs CPU'), nl, nl,
+    write('Select game mode: '),
     readOption(Input),
     ((compare(=, Input, 1), setupPvP);
     (compare(=, Input, 2), setupPvC);
@@ -35,9 +36,35 @@ setupPvP:-
     jokerSetupPhase(B2, 8, B3),
     playPvPGame(B3, 0, 16, _).
 
+% chooseCPUSide(-Side)
+% User decides whether the CPU controls black or white discs
+chooseCPUSide(Side):-
+    write('CPU Side:'), nl, nl,
+    write('1 - Black'), nl,
+    write('2 - White'), nl, nl,
+    write('Select CPU side: '),
+    readOption(Input),
+    ((compare(=, Input, 1), Side is 1);
+    (compare(=, Input, 2), Side is 2);
+    (nl, write('Please input 1 or 2, to select the CPU side'), nl, chooseCPUSide(Side))).
+
+% chooseCPUDifficulty(-Difficulty)
+% User chooses the difficulty of the CPU (easy/hard)
+chooseCPUDifficulty(Difficulty):-
+    write('CPU Difficulty:'), nl, nl,
+    write('1 - Easy'), nl,
+    write('2 - Hard'), nl, nl,
+    write('Select CPU difficulty: '),
+    readOption(Input),
+    ((compare(=, Input, 1), Difficulty is 1);
+    (compare(=, Input, 2), Difficulty is 2);
+    (nl, write('Please input 1 or 2, to select the CPU difficulty'), nl, chooseCPUDifficulty(Difficulty))).
+
 % setupPvC
 % Starts a new Player vs CPU game
 setupPvC:-
+    chooseCPUSide(Side),
+    chooseCPUDifficulty(Difficulty),
     initRandom,
     initial(B0),
     nl, write('Performing random Wall and Bonus pieces placement'), nl,
@@ -128,7 +155,6 @@ readCoordinates(PieceStr, X, Y):-
 % readOption(-Option)
 % Reads game mode option input by the player, used to initiate the game
 readOption(Option):-
-    write('Select game mode: '),
     readInput(Input),
     nth0(0, Input, Inputchar), 
     number_chars(Option, [Inputchar]).
