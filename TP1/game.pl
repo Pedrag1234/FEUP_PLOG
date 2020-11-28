@@ -693,16 +693,18 @@ getRowWhitePlayerScore(X,Y,Board,Score):-
     X1 is X + 1,
     getRowWhitePlayerScore(X1,Y,Board,AuxScore),
     getPiece(Y,X,Board,Piece),
-    getRep(Piece,'W'),
-    Score is AuxScore + 1.
+    getRep(Piece,Rep),
+    (Rep == 'W' -> Score is AuxScore + 1 ; Score is AuxScore + 0),
+    write(Score),nl.
     
 getRowBlackPlayerScore(10,_,_,0).
 getRowBlackPlayerScore(X,Y,Board,Score):-
     X1 is X + 1,
     getRowBlackPlayerScore(X1,Y,Board,AuxScore),
     getPiece(Y,X,Board,Piece),
-    getRep(Piece,'B'),
-    Score is AuxScore + 1.
+    getRep(Piece,Rep),
+    (Rep == 'B' -> Score is AuxScore + 1 ; Score is AuxScore + 0),
+    write(Score),nl.
 
 testCanMove:-
     initial(B0),
