@@ -668,48 +668,41 @@ checkRowEmptyPlaces(Board,X,Y):-
     
 
 getBlackPlayerScore(Board,N):-
-    getAllBlackRowsScores(Board,0,0,Scores),
-    sumlist(Scores,CombScores),
-    write('List of black pieces in the board = '),write(Scores),nl,
-    write('Their Sum = '),write(CombScores),nl,
-    N = CombScores.
+   sumBlackPlayerScores(0,0,Board,N).
 
 getWhitePlayerScore(Board,N):-
-    getAllWhiteRowsScores(Board,0,0,Scores),
-    sumlist(Scores,CombScores),
-    write('List of white pieces in the board = '),write(Scores),nl,
-    write('Their Sum = '),write(CombScores),nl,
-    N = CombScores.
+    sumWhitePlayerScores(0,0,Board,N).
 
-getAllBlackRowsScores(_,_,10,_).
-getAllBlackRowsScores(Board,X,Y,[H|T]):-
+
+sumWhitePlayerScores(_,10,_,0).
+sumWhitePlayerScores(X,Y,Board,Score):-
     Y1 is Y + 1,
-    getBlackRowScore(X,Y,Board,RowScore),
-    sumlist(RowScore,N),
-    H = N,
-    getAllBlackRowsScores(Board,X,Y1,T).
-
-getAllWhiteRowsScores(_,_,10,_).
-getAllWhiteRowsScores(Board,X,Y,[H|T]):-
+    sumWhitePlayerScores(X,Y1,Board,AuxScore),
+    getRowWhitePlayerScore(X,Y,Board,RowScore),
+    Score is RowScore + AuxScore.
+   
+sumBlackPlayerScores(_,10,_,0).
+sumBlackPlayerScores(X,Y,Board,Score):-
     Y1 is Y + 1,
-    getWhiteRowScore(X,Y,Board,RowScore),
-    sumlist(RowScore,N),
-    H = N,
-    getAllWhiteRowsScores(Board,X,Y1,T).
+    sumBlackPlayerScores(X,Y1,Board,AuxScore),
+    getRowBlackPlayerScore(X,Y,Board,RowScore),
+    Score is RowScore + AuxScore.
 
-getBlackRowScore(10,_,_,_).
-getBlackRowScore(X,Y,Board,[H|T]):-
+getRowWhitePlayerScore(10,_,_,0).
+getRowWhitePlayerScore(X,Y,Board,Score):-
     X1 is X + 1,
+    getRowWhitePlayerScore(X1,Y,Board,AuxScore),
     getPiece(Y,X,Board,Piece),
-    (compare(=,Piece,black) -> H = 1 , getBlackRowScore(X1,Y,Board,T); H = 0, getBlackRowScore(X1,Y,Board,T)).
-
-getWhiteRowScore(10,_,_,_).
-getWhiteRowScore(X,Y,Board,[H|T]):-
+    getRep(Piece,'W'),
+    Score is AuxScore + 1.
+    
+getRowBlackPlayerScore(10,_,_,0).
+getRowBlackPlayerScore(X,Y,Board,Score):-
     X1 is X + 1,
+    getRowBlackPlayerScore(X1,Y,Board,AuxScore),
     getPiece(Y,X,Board,Piece),
-    (compare(=,Piece,white) -> H = 1 , getWhiteRowScore(X1,Y,Board,T); H = 0, getWhiteRowScore(X1,Y,Board,T)).
-
-
+    getRep(Piece,'B'),
+    Score is AuxScore + 1.
 
 testCanMove:-
     initial(B0),
