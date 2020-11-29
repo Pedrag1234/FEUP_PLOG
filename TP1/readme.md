@@ -182,6 +182,32 @@ checkAllValidMoves(Board, Player, [H|T], Y, X):-
     (compare(=,MOVE,0) -> checkAllValidMoves(Board, Player, T, Y1, X1) ; (compare(=,Y1,10) -> checkAllValidMoves(Board, Player, T, Y1, X1); checkAllValidMoves(Board, Player, [H|T], Y1, X1) )).
 ```
 
+A validação das jogadas é feita usando a função validatePlay(+Board,+X,+Y,+Player) que por sua vez verifica em todas as direções se existe outra peça (joker ou peça da mesma cor) de forma a que consiga capturar pelo menos uma peça inimiga.
+
+```prolog
+% validatePlay(+Board,+X,+Y,+Player)
+% checks if play made by the player is valid
+validatePlay(Board,X,Y,Player):-
+    checkInput('Disc', X, Y),
+    getPiece(Y,X,Board,Piece),
+    \+compare(=, Piece, black),
+    \+compare(=, Piece, white),
+    \+compare(=, Piece, wall),
+    X1 is X - 1,
+    X2 is X + 1,
+    Y1 is Y - 1,
+    Y2 is Y + 1,
+    (checkLeft(Board,X1,Y, Player,0);
+    checkRight(Board,X2,Y, Player,0);
+    checkUp(Board,X,Y1, Player,0);
+    checkDown(Board,X,Y2, Player,0);
+    checkLeftUp(Board,X1,Y1, Player,0);
+    checkLeftDown(Board,X1,Y2, Player,0);
+    checkRightUp(Board,X2,Y1, Player,0);
+    checkRightDown(Board,X2,Y2, Player,0)).
+```
+
+
 ## Execução de Jogadas
 
 A execução de jogadas tem várias funções dependendo do modo de jogo. 
@@ -197,7 +223,7 @@ makePlayerTurn(Board, 1, NewBoard):-
     placeDiscPlayer2(Board, NewBoard).
 ```
 
-No caso de Player vs CPU é chamad o predicado makeCPUTurn(+Board, +Player, +Difficulty -NewBoard).
+No caso de Player vs CPU é chamada o predicado makeCPUTurn(+Board, +Player, +Difficulty -NewBoard).
 
 ```prolog
 % makeCPUTurn(+Board, +Player, +Difficulty -NewBoard)
@@ -245,7 +271,92 @@ getWhitePlayerScore(Board,N):-
 
 ## Jogada do Computador
 
-//TODO:
+O computador para fazer a sua jogada usa a função makeCPUTurn(+Board, +Player, +Difficulty -NewBoard) na qual tem comportamentos diferentes dependendo da dificuldade escolhida. 
+
+```prolog
+% makeCPUTurn(+Board, +Player, +Difficulty -NewBoard)
+% Goes through a CPU's turn on the game
+makeCPUTurn(Board, 0, Difficulty, NewBoard):-
+    sleep(2),
+    placeDiscCPU1(Board, Difficulty, NewBoard).
+
+makeCPUTurn(Board, 1, Difficulty, NewBoard):-
+    sleep(2),
+    placeDiscCPU2(Board, Difficulty, NewBoard).
+```
+
+No caso de dificuldade ser fácil, o AI escolhe de todas as jogadas possíveis uma aleatória usando as funções placeDiscCPU1(+Board, +Difficulty, -NewBoard) e placeDiscCPU2(+Board, +Difficulty, -NewBoard). 
+
+```prolog
+% placeDiscCPU1(+Board, +Difficulty, -NewBoard)
+% Places a black Disc (owned by a CPU player 1) on the board
+placeDiscCPU1(Board, 1, NewBoard):-
+    canPlay(Board, black, ValidMoves),
+    length(ValidMoves, MovesAmount),
+    random(1, MovesAmount, MoveNumber),
+    getMove(ValidMoves, MoveNumber, Move),
+    Move = [X,Y],
+    setPiece(Board, X, Y, black, TempBoard),
+    capturePieces(TempBoard, black, white, X, Y, NewBoard).
+
+placeDiscCPU1(Board, 2, NewBoard):-
+    !.
+
+% placeDiscCPU2(+Board, +Difficulty, -NewBoard)
+% Places a white Disc (owned by a CPU player 2) on the board
+placeDiscCPU2(Board, 1, NewBoard):-
+    canPlay(Board, white, ValidMoves),
+    length(ValidMoves, MovesAmount),
+    random(1, MovesAmount, MoveNumber),
+    getMove(ValidMoves, MoveNumber, Move),
+    Move = [X,Y],
+    setPiece(Board, X, Y, white, TempBoard),
+    capturePieces(TempBoard, white, black, X, Y, NewBoard).
+
+placeDiscCPU2(Board, 2, NewBoard):-
+    !.
+```
+
+As jogadas aleatórias são obtidas usando a usando a funçao canPlay(+Board, +Player, -ValidMoves) que retorna uma lista de coordenadas de todas as jogadas que possam ser feitas.
+
+```prolog
+% canPlay(+Board, +Player, -Points)
+% checks if the player can make any plays    
+canPlay(Board,Player,Points):-
+    checkAllValidMoves(Board,Player,Points,0,0),
+    length(Points,N),
+    N1 is N - 1, !,
+    N1 =\= 0.
+    
+% checkAllValidMoves(+Board, +Player, -Table, +Y, +X)
+% returns an array with all possible plays
+checkAllValidMoves(_,_,[],10,_).
+checkAllValidMoves(Board, Player, [H|T], Y, X):-
+    (validatePlay(Board,X,Y,Player) -> H = [X,Y],MOVE is 0 ; MOVE is 1),
+    (compare(=,X,9) -> X1 is 0, Y1 is Y + 1; X1 is X + 1, Y1 is Y),
+    (compare(=,MOVE,0) -> checkAllValidMoves(Board, Player, T, Y1, X1) ; (compare(=,Y1,10) -> checkAllValidMoves(Board, Player, T, Y1, X1); checkAllValidMoves(Board, Player, [H|T], Y1, X1) )).
+
+% validatePlay(+Board,+X,+Y,+Player)
+% checks if play made by the player is valid
+validatePlay(Board,X,Y,Player):-
+    checkInput('Disc', X, Y),
+    getPiece(Y,X,Board,Piece),
+    \+compare(=, Piece, black),
+    \+compare(=, Piece, white),
+    \+compare(=, Piece, wall),
+    X1 is X - 1,
+    X2 is X + 1,
+    Y1 is Y - 1,
+    Y2 is Y + 1,
+    (checkLeft(Board,X1,Y, Player,0);
+    checkRight(Board,X2,Y, Player,0);
+    checkUp(Board,X,Y1, Player,0);
+    checkDown(Board,X,Y2, Player,0);
+    checkLeftUp(Board,X1,Y1, Player,0);
+    checkLeftDown(Board,X1,Y2, Player,0);
+    checkRightUp(Board,X2,Y1, Player,0);
+    checkRightDown(Board,X2,Y2, Player,0)).
+```
 
 ## Conclusões:
 
@@ -253,9 +364,8 @@ Devido a limitações de tempo e alguns erros um bocado limitantes não fomos ca
    - O número de peças retornado pelas funções de avaliação do score em alguns casos são valores errados devido ao facto de não contar corretamente o número de peças (ao comparamos a peça numa posição com a peça da cor do jogador apesar de ser verdade retorna falso).
    - Uma situação semelhante ocorre com a inicialização das peças de bónus e as paredes que ao selecionarem uma posição aleatória se a posição não estiver vazia inserem na mesma essa peça.
 
-Estes erros seriam os importantes de corrigir uma vez que impedem o funcionamento normal do jogo. Também implementar alguma maneira de controlar o input dos utilizadores para impedir erros causados pelos mesmos (Ex.: X = a, casusa terminação).
+Estes erros seriam os importantes de corrigir uma vez que impedem o funcionamento normal do jogo. Também implementar alguma maneira de controlar o input dos utilizadores para impedir erros causados pelos mesmos (Ex.: X = a, casusa terminação).É de adicionar que o AI está demasiado simplista neste momento e que talvez se conseguissemos aumentar a sua complexidade através de um algoritmo Alfa-Beta Cut com várias heurísticas para avaliação do tabuleiro tornaria os jogos de CPU vs CPU e Player vs CPU mais interessantes e mais desafiantes.
 
-//TODO: falar da complexidade do AI maybe
 
 ## Bibliografia
 
