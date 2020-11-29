@@ -211,4 +211,57 @@ makeCPUTurn(Board, 1, Difficulty, NewBoard):-
 
 ## Final do Jogo
 
-A verificação do estado final do jogo é feita usando a função 
+A verificação do estado final do jogo é feita usando a função game_over(+Board-,Winner,+Skips), que por sua vez retorna os jogador com o maior score.
+
+```prolog
+% game_over(+Board-,Winner,+Skips)
+% returns winner of the game
+game_over(Board, Winner, Skips):-
+    isGameOver(Board,0,0,Skips),
+    getBlackPlayerScore(Board, N1),
+    getWhitePlayerScore(Board,N2),
+    (N1 > N2 -> Winner is black ; Winner is white).
+```
+
+## Avaliação do Tabuleiro
+
+A avaliação do tabuleiro é feita usando o número de peças do player presentes, isto é quanto mais peças presentes no tabuleiro melhor será o score. Esta avaliação é feita usando a
+
+```prolog
+% getBlackPlayerScore(+Board,-N)
+% checks there is a cell empty in the row
+getBlackPlayerScore(Board,N):-
+    getAllBlackRowsScores(Board,0,0,Scores),
+    sumlist(Scores,CombScores),
+    N = CombScores.
+
+% getWhitePlayerScore(+Board,-N)
+% checks there is a cell empty in the row
+getWhitePlayerScore(Board,N):-
+    getAllWhiteRowsScores(Board,0,0,Scores),
+    sumlist(Scores,CombScores),
+    N = CombScores.
+```
+
+## Jogada do Computador
+
+//TODO:
+
+## Conclusões:
+
+Devido a limitações de tempo e alguns erros um bocado limitantes não fomos capazes de implementar tudo de forma funcional e sem erros. Alguns dos erros que foram encontrados ao longo do desenvolvimento do projeto:
+   - O número de peças retornado pelas funções de avaliação do score em alguns casos são valores errados devido ao facto de não contar corretamente o número de peças (ao comparamos a peça numa posição com a peça da cor do jogador apesar de ser verdade retorna falso).
+   - Uma situação semelhante ocorre com a inicialização das peças de bónus e as paredes que ao selecionarem uma posição aleatória se a posição não estiver vazia inserem na mesma essa peça.
+
+Estes erros seriam os importantes de corrigir uma vez que impedem o funcionamento normal do jogo. Também implementar alguma maneira de controlar o input dos utilizadores para impedir erros causados pelos mesmos (Ex.: X = a, casusa terminação).
+
+//TODO: falar da complexidade do AI maybe
+
+## Bibliografia
+
+- Slides das teóricas
+- Manual do SICStus
+- https://nestorgames.com/#mapello_detail
+- https://cardgames.io/reversi/
+   
+   
