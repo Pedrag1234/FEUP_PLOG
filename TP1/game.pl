@@ -725,6 +725,8 @@ checkRightDown(Board,X,Y, Player,N):-
     checkRightDown(Board,X1,Y1, Player,N1)),
     !.
 
+% game_over(+Board-,Winner,+Skips)
+% returns winner of the game
 game_over(Board, Winner, Skips):-
     isGameOver(Board,0,0,Skips),
     getBlackPlayerScore(Board, N1),
@@ -751,11 +753,15 @@ checkRowEmptyPlaces(Board,X,Y):-
     X1 is X + 1,
     checkRowEmptyPlaces(Board,X1,Y).
 
+% getBlackPlayerScore(+Board,-N)
+% checks there is a cell empty in the row
 getBlackPlayerScore(Board,N):-
     getAllBlackRowsScores(Board,0,0,Scores),
     sumlist(Scores,CombScores),
     N = CombScores.
 
+% getWhitePlayerScore(+Board,-N)
+% checks there is a cell empty in the row
 getWhitePlayerScore(Board,N):-
     getAllWhiteRowsScores(Board,0,0,Scores),
     sumlist(Scores,CombScores),
