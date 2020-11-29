@@ -253,13 +253,13 @@ bonusSetupPhase(Board, N, NewBoard):-
 % Places a black Disc (owned by player 1) on the board
 placeDiscPlayer1(Board, NewBoard):-
     readCoordinates('Disc', X, Y),
-    ((validateDiscInput(X,Y),validatePlay(Board,X,Y,black)) -> (setPiece(Board,X,Y,black,TempBoard), capturePieces(TempBoard, black, white, X, Y, NewBoard)) ; write('Invalid move, discs must be in the inner 8x8 square, and they must capture an enemy piece\n'), nl, placeDiscPlayer1(Board,NewBoard)).
+    ((validateDiscInput(X,Y),validatePlay(Board,X,Y,black)) -> (setPiece(Board,X,Y,black,TempBoard), capturePieces(TempBoard, black, X, Y, NewBoard)) ; write('Invalid move, can\'t place discs on top of walls/discs, discs must be in the inner 8x8 square, and they must capture an enemy piece\n'), nl, placeDiscPlayer1(Board,NewBoard)).
 
 % placeDiscPlayer2(+Board, -NewBoard)
 % Places a white Disc (owned by player 2) on the board
 placeDiscPlayer2(Board, NewBoard):-
     readCoordinates('Disc', X, Y),
-    ((validateDiscInput(X,Y),validatePlay(Board,X,Y,white)) -> (setPiece(Board,X,Y,white,TempBoard), capturePieces(TempBoard, white, black, X, Y, NewBoard)) ; write('Invalid move, discs must be in the inner 8x8 square, and they must capture an enemy piece\n'), nl, placeDiscPlayer2(Board,NewBoard)).
+    ((validateDiscInput(X,Y),validatePlay(Board,X,Y,white)) -> (setPiece(Board,X,Y,white,TempBoard), capturePieces(TempBoard, white, X, Y, NewBoard)) ; write('Invalid move, can\'t place discs on top of walls/discs, discs must be in the inner 8x8 square, and they must capture an enemy piece\n'), nl, placeDiscPlayer2(Board,NewBoard)).
 
 % getMove(+ValidMoves, +MoveNumber, -Move)
 % Gets a selected move from the valid moves list.
@@ -277,7 +277,7 @@ placeDiscCPU1(Board, 1, NewBoard):-
     getMove(ValidMoves, MoveNumber, Move),
     Move = [X,Y],
     setPiece(Board, X, Y, black, TempBoard),
-    capturePieces(TempBoard, black, white, X, Y, NewBoard).
+    capturePieces(TempBoard, black, X, Y, NewBoard).
 
 placeDiscCPU1(Board, 2, NewBoard):-
     !.
@@ -291,7 +291,7 @@ placeDiscCPU2(Board, 1, NewBoard):-
     getMove(ValidMoves, MoveNumber, Move),
     Move = [X,Y],
     setPiece(Board, X, Y, white, TempBoard),
-    capturePieces(TempBoard, white, black, X, Y, NewBoard).
+    capturePieces(TempBoard, white, X, Y, NewBoard).
 
 placeDiscCPU2(Board, 2, NewBoard):-
     !.
@@ -325,153 +325,105 @@ initial(X):-
     setInitialPieces(B0,B1),
     X = B1.
 
-% capturePieces(+Board, +Player, +Capture, +X, +Y, -NewBoard)
+% capturePieces(+Board, +Player, +X, +Y, -NewBoard)
 % Checks if there are capturable pieces in all possible directions, and captures them if possible
-capturePieces(Board, Player, Capture, X, Y, NewBoard) :-
-    capturePieceLeft(Board, Player, Capture, X, Y, TempBoard1),
-    capturePieceRight(TempBoard1, Player, Capture, X, Y, TempBoard2),
-    capturePieceUp(TempBoard2, Player, Capture, X, Y, TempBoard3),
-    capturePieceDown(TempBoard3, Player, Capture, X, Y, TempBoard4),
-    capturePieceLeftUp(TempBoard4, Player, Capture, X, Y, TempBoard5),
-    capturePieceLeftDown(TempBoard5, Player, Capture, X, Y, TempBoard6),
-    capturePieceRightUp(TempBoard6, Player, Capture, X, Y, TempBoard7),
-    capturePieceRightDown(TempBoard7, Player, Capture, X, Y, NewBoard).
-
-% capturePieceLeft(+Board, +Player, +Capture, +X, +Y, -NewBoard)
-% Checks directly left for a piece of the opposite player, and captures it if possible
-capturePieceLeft(Board, _, _, 1, _, Board).
-
-capturePieceLeft(Board, Player, Capture, X, Y, NewBoard) :-
+capturePieces(Board, Player, X, Y, NewBoard) :-
     X1 is X - 1,
-    getPiece(Y,X1,Board,Piece),
-    compare(=, Piece, Capture),
-    X2 is X - 2,
-    getPiece(Y,X2,Board,Piece2),
-    (compare(=, Piece2, Player) ; compare(=, Piece2, joker)),
-    setPiece(Board,X1,Y,Player,NewBoard).
-
-capturePieceLeft(Board, _, _, _, _, Board).
-
-% capturePieceRight(+Board, +Player, +Capture, +X, +Y, -NewBoard)
-% Checks directly right for a piece of the opposite player, and captures it if possible
-capturePieceRight(Board, _, _, 8, _, Board).
-
-capturePieceRight(Board, Player, Capture, X, Y, NewBoard) :-
-    X1 is X + 1,
-    getPiece(Y,X1,Board,Piece),
-    compare(=, Piece, Capture),
-    X2 is X + 2,
-    getPiece(Y,X2,Board,Piece2),
-    (compare(=, Piece2, Player) ; compare(=, Piece2, joker)),
-    setPiece(Board,X1,Y,Player,NewBoard).
-
-capturePieceRight(Board, _, _, _, _, Board).
-
-% capturePieceUp(+Board, +Player, +Capture, +X, +Y, -NewBoard)
-% Checks directly up for a piece of the opposite player, and captures it if possible
-capturePieceUp(Board, _, _, _, 1, Board).
-
-capturePieceUp(Board, Player, Capture, X, Y, NewBoard) :-
+    X2 is X + 1,
     Y1 is Y - 1,
-    getPiece(Y1,X,Board,Piece),
-    compare(=, Piece, Capture),
-    Y2 is Y - 2,
-    getPiece(Y2,X,Board,Piece2),
-    (compare(=, Piece2, Player) ; compare(=, Piece2, joker)),
-    setPiece(Board,X,Y1,Player,NewBoard).
+    Y2 is Y + 1,
+    checkLeft(Board, X1, Y, Player, 0, Pieces1), LeftTargetX is X - Pieces1,
+    checkRight(Board, X2, Y, Player, 0, Pieces2), RightTargetX is X + Pieces2,
+    checkUp(Board, X, Y1, Player, 0, Pieces3), UpTargetY is Y - Pieces3,
+    checkDown(Board, X, Y2, Player, 0, Pieces4), DownTargetY is Y + Pieces4,
+    checkLeftUp(Board, X1, Y1, Player, 0, Pieces5), LeftUpTargetX is X - Pieces5,
+    checkLeftDown(Board, X1, Y2, Player, 0, Pieces6), LeftDownTargetX is X - Pieces6,
+    checkRightUp(Board, X2, Y1, Player, 0, Pieces7), RightUpTargetX is X + Pieces7,
+    checkRightDown(Board, X2, Y2, Player, 0, Pieces8), RightDownTargetX is X + Pieces8,
+    capturePieceLeft(Board, Player, X, Y, LeftTargetX, TempBoard1),
+    capturePieceRight(TempBoard1, Player, X, Y, RightTargetX, TempBoard2),
+    capturePieceUp(TempBoard2, Player, X, Y, UpTargetY, TempBoard3),
+    capturePieceDown(TempBoard3, Player, X, Y, DownTargetY, TempBoard4),
+    capturePieceLeftUp(TempBoard4, Player, X, Y, LeftUpTargetX, TempBoard5),
+    capturePieceLeftDown(TempBoard5, Player, X, Y, LeftDownTargetX, TempBoard6),
+    capturePieceRightUp(TempBoard6, Player, X, Y, RightUpTargetX, TempBoard7),
+    capturePieceRightDown(TempBoard7, Player, X, Y, RightDownTargetX, NewBoard).
 
-capturePieceUp(Board, _, _, _, _, Board).
+% capturePieceLeft(+Board, +Player, +X, +Y, +TargetX, -NewBoard)
+% Captures a specified amount of enemy pieces located to the left of the given piece
+capturePieceLeft(Board, _, TargetX, _, TargetX, Board).
 
-% capturePieceDown(+Board, +Player, +Capture, +X, +Y, -NewBoard)
-% Checks directly down for a piece of the opposite player, and captures it if possible
-capturePieceDown(Board, _, _, _, 8, Board).
+capturePieceLeft(Board, Player, X, Y, TargetX, NewBoard) :-
+    NextX is X - 1,
+    setPiece(Board,NextX,Y,Player,TempBoard),
+    capturePieceLeft(TempBoard, Player, NextX, Y, TargetX, NewBoard).
 
-capturePieceDown(Board, Player, Capture, X, Y, NewBoard) :-
-    Y1 is Y + 1,
-    getPiece(Y1,X,Board,Piece),
-    compare(=, Piece, Capture),
-    Y2 is Y + 2,
-    getPiece(Y2,X,Board,Piece2),
-    (compare(=, Piece2, Player) ; compare(=, Piece2, joker)),
-    setPiece(Board,X,Y1,Player,NewBoard).
+% capturePieceRight(+Board, +Player, +X, +Y, +TargetX, -NewBoard)
+% Captures a specified amount of enemy pieces located to the right of the given piece
+capturePieceRight(Board, _, TargetX, _, TargetX, Board).
 
-capturePieceDown(Board, _, _, _, _, Board).
+capturePieceRight(Board, Player, X, Y, TargetX, NewBoard) :-
+    NextX is X + 1,
+    setPiece(Board,NextX,Y,Player,TempBoard),
+    capturePieceRight(TempBoard, Player, NextX, Y, TargetX, NewBoard).
 
-% capturePieceLeftUp(+Board, +Player, +Capture, +X, +Y, -NewBoard)
-% Checks directly left and up for a piece of the opposite player, and captures it if possible
-capturePieceLeftUp(Board, _, _, _, 1, Board).
+% capturePieceUp(+Board, +Player, +X, +Y, +TargetY, -NewBoard)
+% Captures a specified amount of enemy pieces located above the given piece
+capturePieceUp(Board, _, _, TargetY, TargetY, Board).
 
-capturePieceLeftUp(Board, _, _, 1, _, Board).
+capturePieceUp(Board, Player, X, Y, TargetY, NewBoard) :-
+    NextY is Y - 1,
+    setPiece(Board,X,NextY,Player,TempBoard),
+    capturePieceUp(TempBoard, Player, X, NextY, TargetY, NewBoard).
 
-capturePieceLeftUp(Board, Player, Capture, X, Y, NewBoard) :-
-    X1 is X - 1,
-    Y1 is Y - 1,
-    getPiece(Y1,X1,Board,Piece),
-    compare(=, Piece, Capture),
-    X2 is X - 2,
-    Y2 is Y - 2,
-    getPiece(Y2,X2,Board,Piece2),
-    (compare(=, Piece2, Player) ; compare(=, Piece2, joker)),
-    setPiece(Board,X1,Y1,Player,NewBoard).
+% capturePieceDown(+Board, +Player, +X, +Y, +TargetY, -NewBoard)
+% Captures a specified amount of enemy pieces located below the given piece
+capturePieceDown(Board, _, _, TargetY, TargetY, Board).
 
-capturePieceLeftUp(Board, _, _, _, _, Board).
+capturePieceDown(Board, Player, X, Y, TargetY, NewBoard) :-
+    NextY is Y + 1,
+    setPiece(Board,X,NextY,Player,TempBoard),
+    capturePieceDown(TempBoard, Player, X, NextY, TargetY, NewBoard).
 
-% capturePieceLeftDown(+Board, +Player, +Capture, +X, +Y, -NewBoard)
-% Checks directly left and down for a piece of the opposite player, and captures it if possible
-capturePieceLeftDown(Board, _, _, _, 8, Board).
+% capturePieceLeftUp(+Board, +Player, +X, +Y, +TargetX, -NewBoard)
+% Captures a specified amount of enemy pieces located to the left and above the given piece
+capturePieceLeftUp(Board, _, TargetX, _, TargetX, Board).
 
-capturePieceLeftDown(Board, _, _, 1, _, Board).
+capturePieceLeftUp(Board, Player, X, Y, TargetX, NewBoard) :-
+    NextX is X - 1,
+    NextY is Y - 1,
+    setPiece(Board,NextX,NextY,Player,TempBoard),
+    capturePieceLeftUp(TempBoard, Player, NextX, NextY, TargetX, NewBoard).
 
-capturePieceLeftDown(Board, Player, Capture, X, Y, NewBoard) :-
-    X1 is X - 1,
-    Y1 is Y + 1,
-    getPiece(Y1,X1,Board,Piece),
-    compare(=, Piece, Capture),
-    X2 is X - 2,
-    Y2 is Y + 2,
-    getPiece(Y2,X2,Board,Piece2),
-    (compare(=, Piece2, Player) ; compare(=, Piece2, joker)),
-    setPiece(Board,X1,Y1,Player,NewBoard).
+% capturePieceLeftDown(+Board, +Player, +X, +Y, +TargetX, -NewBoard)
+% Captures a specified amount of enemy pieces located to the left and below the given piece
+capturePieceLeftDown(Board, _, TargetX, _, TargetX, Board).
 
-capturePieceLeftDown(Board, _, _, _, _, Board).
+capturePieceLeftDown(Board, Player, X, Y, TargetX, NewBoard) :-
+    NextX is X - 1,
+    NextY is Y + 1,
+    setPiece(Board,NextX,NextY,Player,TempBoard),
+    capturePieceLeftDown(TempBoard, Player, NextX, NextY, TargetX, NewBoard).
 
-% capturePieceRightUp(+Board, +Player, +Capture, +X, +Y, -NewBoard)
-% Checks directly right and up for a piece of the opposite player, and captures it if possible
-capturePieceRightUp(Board, _, _, _, 1, Board).
+% capturePieceRightUp(+Board, +Player, +X, +Y, +TargetX, -NewBoard)
+% Captures a specified amount of enemy pieces located to the right and above the given piece
+capturePieceRightUp(Board, _, TargetX, _, TargetX, Board).
 
-capturePieceRightUp(Board, _, _, 8, _, Board).
+capturePieceRightUp(Board, Player, X, Y, TargetX, NewBoard) :-
+    NextX is X + 1,
+    NextY is Y - 1,
+    setPiece(Board,NextX,NextY,Player,TempBoard),
+    capturePieceRightUp(TempBoard, Player, NextX, NextY, TargetX, NewBoard).
 
-capturePieceRightUp(Board, Player, Capture, X, Y, NewBoard) :-
-    X1 is X + 1,
-    Y1 is Y - 1,
-    getPiece(Y1,X1,Board,Piece),
-    compare(=, Piece, Capture),
-    X2 is X + 2,
-    Y2 is Y - 2,
-    getPiece(Y2,X2,Board,Piece2),
-    (compare(=, Piece2, Player) ; compare(=, Piece2, joker)),
-    setPiece(Board,X1,Y1,Player,NewBoard).
+% capturePieceRightDown(+Board, +Player, +X, +Y, +TargetX, -NewBoard)
+% Captures a specified amount of enemy pieces located to the right and below the given piece
+capturePieceRightDown(Board, _, TargetX, _, TargetX, Board).
 
-capturePieceRightUp(Board, _, _, _, _, Board).
-
-% capturePieceRightDown(+Board, +Player, +Capture, +X, +Y, -NewBoard)
-% Checks directly right and down for a piece of the opposite player, and captures it if possible
-capturePieceRightDown(Board, _, _, _, 8, Board).
-
-capturePieceRightDown(Board, _, _, 8, _, Board).
-
-capturePieceRightDown(Board, Player, Capture, X, Y, NewBoard) :-
-    X1 is X + 1,
-    Y1 is Y + 1,
-    getPiece(Y1,X1,Board,Piece),
-    compare(=, Piece, Capture),
-    X2 is X + 2,
-    Y2 is Y + 2,
-    getPiece(Y2,X2,Board,Piece2),
-    (compare(=, Piece2, Player) ; compare(=, Piece2, joker)),
-    setPiece(Board,X1,Y1,Player,NewBoard).
-
-capturePieceRightDown(Board, _, _, _, _, Board).
+capturePieceRightDown(Board, Player, X, Y, TargetX, NewBoard) :-
+    NextX is X + 1,
+    NextY is Y + 1,
+    setPiece(Board,NextX,NextY,Player,TempBoard),
+    capturePieceRightDown(TempBoard, Player, NextX, NextY, TargetX, NewBoard).
 
 % validatePlay(+Board,+X,+Y,+Player)
 % checks if play made by the player is valid
@@ -485,14 +437,14 @@ validatePlay(Board,X,Y,Player):-
     X2 is X + 1,
     Y1 is Y - 1,
     Y2 is Y + 1,
-    (checkLeft(Board,X1,Y, Player,0);
-    checkRight(Board,X2,Y, Player,0);
-    checkUp(Board,X,Y1, Player,0);
-    checkDown(Board,X,Y2, Player,0);
-    checkLeftUp(Board,X1,Y1, Player,0);
-    checkLeftDown(Board,X1,Y2, Player,0);
-    checkRightUp(Board,X2,Y1, Player,0);
-    checkRightDown(Board,X2,Y2, Player,0)).
+    ((checkLeft(Board,X1,Y,Player,0,Pieces), Pieces > 0);
+    (checkRight(Board,X2,Y,Player,0,Pieces), Pieces > 0);
+    (checkUp(Board,X,Y1,Player,0,Pieces), Pieces > 0);
+    (checkDown(Board,X,Y2,Player,0,Pieces), Pieces > 0);
+    (checkLeftUp(Board,X1,Y1,Player,0,Pieces), Pieces > 0);
+    (checkLeftDown(Board,X1,Y2,Player,0,Pieces), Pieces > 0);
+    (checkRightUp(Board,X2,Y1,Player,0,Pieces), Pieces > 0);
+    (checkRightDown(Board,X2,Y2,Player,0,Pieces), Pieces > 0)).
 
 % canPlay(+Board, +Player, -Points)
 % checks if the player can make any plays    
@@ -510,140 +462,121 @@ checkAllValidMoves(Board, Player, [H|T], Y, X):-
     (compare(=,X,9) -> X1 is 0, Y1 is Y + 1; X1 is X + 1, Y1 is Y),
     (compare(=,MOVE,0) -> checkAllValidMoves(Board, Player, T, Y1, X1) ; (compare(=,Y1,10) -> checkAllValidMoves(Board, Player, T, Y1, X1); checkAllValidMoves(Board, Player, [H|T], Y1, X1) )).
 
-% checkLeft(+Board,+X,+Y, +Player,+N)
+% checkLeft(+Board,+X,+Y,+Player,+N,-Pieces)
 % checks if play is possible by checking all pieces to the left of the pos
-checkLeft(Board,X,Y, Player,N):-
-    getRep(Player,VX),
-    getRep(black,VY),
-    compare(=, VX, VY),
+checkLeft(Board,X,Y,black,N,Pieces):-
     X >= 0,
     X1 is X - 1,
     getPiece(Y,X,Board,Piece),
     \+compare(=, Piece, none),
     \+compare(=, Piece, wall),
     \+compare(=, Piece, bonus),
-    ((compare(=, Piece, black) ; compare(=, Piece, joker))  -> \+compare(=, N, 0)  ;
+    ((compare(=, Piece, black) ; compare(=, Piece, joker)) -> Pieces is N ;
     N1 is N + 1,
-    checkLeft(Board,X1,Y, Player,N1)),
+    checkLeft(Board,X1,Y,black,N1,Pieces)),
     !.
 
-checkLeft(Board,X,Y, Player,N):-
-    getRep(Player,VX),
-    getRep(white,VY),
-    compare(=, VX, VY),
+checkLeft(Board,X,Y,white,N,Pieces):-
     X >= 0,
     X1 is X - 1,
     getPiece(Y,X,Board,Piece),
     \+compare(=, Piece, none),
     \+compare(=, Piece, wall),
     \+compare(=, Piece, bonus),
-    ((compare(=, Piece, white) ; compare(=, Piece, joker)) -> \+compare(=, N, 0) ; 
+    ((compare(=, Piece, white) ; compare(=, Piece, joker)) -> Pieces is N ; 
     N1 is N + 1,
-    checkLeft(Board,X1,Y, Player,N1)),
+    checkLeft(Board,X1,Y,white,N1,Pieces)),
     !.
 
-% checkRight(+Board,+X,+Y, +Player,+N)
+checkLeft(_,_,_,_,0,0).
+
+% checkRight(+Board,+X,+Y,+Player,+N,-Pieces)
 % checks if play is possible by checking all pieces to the right of the pos        
-checkRight(Board,X,Y, Player,N):-
-    getRep(Player,VX),
-    getRep(black,VY),
-    compare(=, VX, VY),
+checkRight(Board,X,Y,black,N,Pieces):-
     X =< 9,
     X1 is X + 1,
     getPiece(Y,X,Board,Piece),
     \+compare(=, Piece, none),
     \+compare(=, Piece, wall),
     \+compare(=, Piece, bonus),
-    ((compare(=, Piece, black) ; compare(=, Piece, joker))  -> \+compare(=, N, 0)  ;
+    ((compare(=, Piece, black) ; compare(=, Piece, joker)) -> Pieces is N ;
     N1 is N + 1,
-    checkRight(Board,X1,Y, Player,N1)),
+    checkRight(Board,X1,Y,black,N1,Pieces)),
     !.
 
-checkRight(Board,X,Y, Player,N):-
-    getRep(Player,VX),
-    getRep(white,VY),
-    compare(=, VX, VY),
+checkRight(Board,X,Y,white,N,Pieces):-
     X =< 9,
     X1 is X + 1,
     getPiece(Y,X,Board,Piece),
     \+compare(=, Piece, none),
     \+compare(=, Piece, wall),
     \+compare(=, Piece, bonus),
-    ((compare(=, Piece, white) ; compare(=, Piece, joker))  -> \+compare(=, N, 0)  ;
+    ((compare(=, Piece, white) ; compare(=, Piece, joker)) -> Pieces is N ;
     N1 is N + 1,
-    checkRight(Board,X1,Y, Player,N1)),
+    checkRight(Board,X1,Y,white,N1,Pieces)),
     !.
 
-% checkUp(+Board,+X,+Y, +Player,+N)
+checkRight(_,_,_,_,0,0).
+
+% checkUp(+Board,+X,+Y,+Player,+N,-Pieces)
 % checks if play is possible by checking all pieces to the above of the pos
-checkUp(Board,X,Y, Player,N):-
-    getRep(Player,VX),
-    getRep(black,VY),
-    compare(=, VX, VY),
+checkUp(Board,X,Y,black,N,Pieces):-
     Y >= 0,
     Y1 is Y - 1,
     getPiece(Y,X,Board,Piece),
     \+compare(=, Piece, none),
     \+compare(=, Piece, wall),
     \+compare(=, Piece, bonus),
-    ((compare(=, Piece, black) ; compare(=, Piece, joker))  -> \+compare(=, N, 0)  ;
+    ((compare(=, Piece, black) ; compare(=, Piece, joker)) -> Pieces is N ;
     N1 is N + 1,
-    checkUp(Board,X,Y1, Player,N1)),
+    checkUp(Board,X,Y1,black,N1,Pieces)),
     !.
 
-checkUp(Board,X,Y, Player,N):-
-    getRep(Player,VX),
-    getRep(white,VY),
-    compare(=, VX, VY),
+checkUp(Board,X,Y,white,N,Pieces):-
     Y >= 0,
     Y1 is Y - 1,
     getPiece(Y,X,Board,Piece),
     \+compare(=, Piece, none),
     \+compare(=, Piece, wall),
     \+compare(=, Piece, bonus),
-    ((compare(=, Piece, white) ; compare(=, Piece, joker))  -> \+compare(=, N, 0)  ;
+    ((compare(=, Piece, white) ; compare(=, Piece, joker)) -> Pieces is N ;
     N1 is N + 1,
-    checkUp(Board,X,Y1, Player,N1)),
-    !. 
+    checkUp(Board,X,Y1,white,N1,Pieces)),
+    !.
 
-% checkDown(+Board,+X,+Y, +Player,+N)
+checkUp(_,_,_,_,0,0). 
+
+% checkDown(+Board,+X,+Y,+Player,+N,-Pieces)
 % checks if play is possible by checking all pieces to the bellow of the pos
-checkDown(Board,X,Y, Player,N):-
-    getRep(Player,VX),
-    getRep(black,VY),
-    compare(=, VX, VY),
+checkDown(Board,X,Y,black,N,Pieces):-
     Y =< 9,
     Y1 is Y + 1,
     getPiece(Y,X,Board,Piece),
     \+compare(=, Piece, none),
     \+compare(=, Piece, wall),
     \+compare(=, Piece, bonus),
-    ((compare(=, Piece, black) ; compare(=, Piece, joker))  -> \+compare(=, N, 0)  ;
+    ((compare(=, Piece, black) ; compare(=, Piece, joker)) -> Pieces is N ;
     N1 is N + 1,
-    checkDown(Board,X,Y1, Player,N1)),
+    checkDown(Board,X,Y1,black,N1,Pieces)),
     !.
 
-checkDown(Board,X,Y, Player,N):-
-    getRep(Player,VX),
-    getRep(white,VY),
-    compare(=, VX, VY),
+checkDown(Board,X,Y,white,N,Pieces):-
     Y =< 9,
     Y1 is Y + 1,
     getPiece(Y,X,Board,Piece),
     \+compare(=, Piece, none),
     \+compare(=, Piece, wall),
     \+compare(=, Piece, bonus),
-    ((compare(=, Piece, white) ; compare(=, Piece, joker))  -> \+compare(=, N, 0)  ;
+    ((compare(=, Piece, white) ; compare(=, Piece, joker)) -> Pieces is N ;
     N1 is N + 1,
-    checkDown(Board,X,Y1, Player,N1)),
+    checkDown(Board,X,Y1,white,N1,Pieces)),
     !.
 
-% checkLeftUp(+Board,+X,+Y, +Player,+N)
+checkDown(_,_,_,_,0,0).
+
+% checkLeftUp(+Board,+X,+Y,+Player,+N,-Pieces)
 % checks if play is possible by checking all pieces diagonally up to the left of the pos
-checkLeftUp(Board,X,Y, Player,N):-
-    getRep(Player,VX),
-    getRep(black,VY),
-    compare(=, VX, VY),
+checkLeftUp(Board,X,Y,black,N,Pieces):-
     X >= 0,
     Y >= 0,
     Y1 is Y - 1,
@@ -652,15 +585,12 @@ checkLeftUp(Board,X,Y, Player,N):-
     \+compare(=, Piece, none),
     \+compare(=, Piece, wall),
     \+compare(=, Piece, bonus),
-    ((compare(=, Piece, black) ; compare(=, Piece, joker))  -> \+compare(=, N, 0)  ;
+    ((compare(=, Piece, black) ; compare(=, Piece, joker)) -> Pieces is N ;
     N1 is N + 1,
-    checkLeftUp(Board,X1,Y1, Player,N1)),
+    checkLeftUp(Board,X1,Y1,black,N1,Pieces)),
     !.
 
-checkLeftUp(Board,X,Y, Player,N):-
-    getRep(Player,VX),
-    getRep(white,VY),
-    compare(=, VX, VY),
+checkLeftUp(Board,X,Y,white,N,Pieces):-
     X >= 0,
     Y >= 0,
     Y1 is Y - 1,
@@ -669,17 +599,16 @@ checkLeftUp(Board,X,Y, Player,N):-
     \+compare(=, Piece, none),
     \+compare(=, Piece, wall),
     \+compare(=, Piece, bonus),
-    ((compare(=, Piece, white) ; compare(=, Piece, joker))  -> \+compare(=, N, 0)  ;
+    ((compare(=, Piece, white) ; compare(=, Piece, joker)) -> Pieces is N ;
     N1 is N + 1,
-    checkLeftUp(Board,X1,Y1, Player,N1)),
-    !. 
+    checkLeftUp(Board,X1,Y1,white,N1,Pieces)),
+    !.
 
-% checkLeftDown(+Board,+X,+Y, +Player,+N)
+checkLeftUp(_,_,_,_,0,0). 
+
+% checkLeftDown(+Board,+X,+Y,+Player,+N,-Pieces)
 % checks if play is possible by checking all pieces diagonally down to the left of the pos
-checkLeftDown(Board,X,Y, Player,N):-
-    getRep(Player,VX),
-    getRep(black,VY),
-    compare(=, VX, VY),
+checkLeftDown(Board,X,Y,black,N,Pieces):-
     X >= 0,
     Y =< 9,
     Y1 is Y + 1,
@@ -688,15 +617,12 @@ checkLeftDown(Board,X,Y, Player,N):-
     \+compare(=, Piece, none),
     \+compare(=, Piece, wall),
     \+compare(=, Piece, bonus),
-    ((compare(=, Piece, black) ; compare(=, Piece, joker))  -> \+compare(=, N, 0)  ;
+    ((compare(=, Piece, black) ; compare(=, Piece, joker)) -> Pieces is N ;
     N1 is N + 1,
-    checkLeftDown(Board,X1,Y1, Player,N1)),
+    checkLeftDown(Board,X1,Y1,black,N1,Pieces)),
     !.
 
-checkLeftDown(Board,X,Y, Player,N):-
-    getRep(Player,VX),
-    getRep(white,VY),
-    compare(=, VX, VY),
+checkLeftDown(Board,X,Y,white,N,Pieces):-
     X >= 0,
     Y =< 9,
     Y1 is Y + 1,
@@ -705,17 +631,16 @@ checkLeftDown(Board,X,Y, Player,N):-
     \+compare(=, Piece, none),
     \+compare(=, Piece, wall),
     \+compare(=, Piece, bonus),
-    ((compare(=, Piece, white) ; compare(=, Piece, joker))  -> \+compare(=, N, 0)  ;
+    ((compare(=, Piece, white) ; compare(=, Piece, joker)) -> Pieces is N ;
     N1 is N + 1,
-    checkLeftDown(Board,X1,Y1, Player,N1)),
+    checkLeftDown(Board,X1,Y1,white,N1,Pieces)),
     !.
 
-% checkRightUp(+Board,+X,+Y, +Player,+N)
+checkLeftDown(_,_,_,_,0,0).
+
+% checkRightUp(+Board,+X,+Y,+Player,+N,-Pieces)
 % checks if play is possible by checking all pieces diagonally up to the right of the pos
-checkRightUp(Board,X,Y, Player,N):-
-    getRep(Player,VX),
-    getRep(black,VY),
-    compare(=, VX, VY),
+checkRightUp(Board,X,Y,black,N,Pieces):-
     X =< 9,
     Y >= 0,
     Y1 is Y - 1,
@@ -724,15 +649,12 @@ checkRightUp(Board,X,Y, Player,N):-
     \+compare(=, Piece, none),
     \+compare(=, Piece, wall),
     \+compare(=, Piece, bonus),
-    ((compare(=, Piece, black) ; compare(=, Piece, joker))  -> \+compare(=, N, 0)  ;
+    ((compare(=, Piece, black) ; compare(=, Piece, joker)) -> Pieces is N ;
     N1 is N + 1,
-    checkRightUp(Board,X1,Y1, Player,N1)),
+    checkRightUp(Board,X1,Y1,black,N1,Pieces)),
     !.
 
-checkRightUp(Board,X,Y, Player,N):-
-    getRep(Player,VX),
-    getRep(white,VY),
-    compare(=, VX, VY),
+checkRightUp(Board,X,Y,white,N,Pieces):-
     X =< 9,
     Y >= 0,
     Y1 is Y - 1,
@@ -741,17 +663,16 @@ checkRightUp(Board,X,Y, Player,N):-
     \+compare(=, Piece, none),
     \+compare(=, Piece, wall),
     \+compare(=, Piece, bonus),
-    ((compare(=, Piece, white) ; compare(=, Piece, joker))  -> \+compare(=, N, 0)  ;
+    ((compare(=, Piece, white) ; compare(=, Piece, joker)) -> Pieces is N ;
     N1 is N + 1,
-    checkRightUp(Board,X1,Y1, Player,N1)),
+    checkRightUp(Board,X1,Y1,white,N1,Pieces)),
     !.
 
-% checkRightUp(+Board,+X,+Y, +Player,+N)
+checkRightUp(_,_,_,_,0,0).
+
+% checkRightUp(+Board,+X,+Y,+Player,+N,-Pieces)
 % checks if play is possible by checking all pieces diagonally down to the right of the pos
-checkRightDown(Board,X,Y, Player,N):-
-    getRep(Player,VX),
-    getRep(black,VY),
-    compare(=, VX, VY),
+checkRightDown(Board,X,Y,black,N,Pieces):-
     X =< 9,
     Y =< 9,
     Y1 is Y + 1,
@@ -760,15 +681,12 @@ checkRightDown(Board,X,Y, Player,N):-
     \+compare(=, Piece, none),
     \+compare(=, Piece, wall),
     \+compare(=, Piece, bonus),
-    ((compare(=, Piece, black) ; compare(=, Piece, joker))  -> \+compare(=, N, 0)  ;
+    ((compare(=, Piece, black) ; compare(=, Piece, joker)) -> Pieces is N ;
     N1 is N + 1,
-    checkRightDown(Board,X1,Y1, Player,N1)),
+    checkRightDown(Board,X1,Y1,black,N1,N1)),
     !.
 
-checkRightDown(Board,X,Y, Player,N):-
-    getRep(Player,VX),
-    getRep(white,VY),
-    compare(=, VX, VY),
+checkRightDown(Board,X,Y,white,N,Pieces):-
     X =< 9,
     Y =< 9,
     Y1 is Y + 1,
@@ -777,10 +695,12 @@ checkRightDown(Board,X,Y, Player,N):-
     \+compare(=, Piece, none),
     \+compare(=, Piece, wall),
     \+compare(=, Piece, bonus),
-    ((compare(=, Piece, white) ; compare(=, Piece, joker))  -> \+compare(=, N, 0)  ;
+    ((compare(=, Piece, white) ; compare(=, Piece, joker)) -> Pieces is N ;
     N1 is N + 1,
-    checkRightDown(Board,X1,Y1, Player,N1)),
+    checkRightDown(Board,X1,Y1,white,N1,Pieces)),
     !.
+
+checkRightDown(_,_,_,_,0,0).
 
 % game_over(+Board-,Winner,+Skips)
 % returns winner of the game
@@ -851,21 +771,6 @@ getWhiteRowScore(X,Y,Board,[H|T]):-
     X1 is X + 1,
     getPiece(Y,X,Board,Piece),
     (compare(=,Piece,white) -> H = 1 , getWhiteRowScore(X1,Y,Board,T); H = 0, getWhiteRowScore(X1,Y,Board,T)).
-
-testCanMove:-
-    initial(B0),
-    wallSetupPhase(B0, 8, B1),
-    bonusSetupPhase(B1, 8, B2),
-    (canPlay(B2,black, Points) -> write(Points)).
-
-testValidMoves:-
-    initial(B0),
-    wallSetupPhase(B0, 8, B1),
-    bonusSetupPhase(B1, 8, B2),
-    checkAllValidMoves(B2,black,Points,0,0),
-    write(Points),nl,
-    length(Points, N),
-    write(N),nl.
     
 testCalculateScores:-
     initial(B0),
