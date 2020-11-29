@@ -92,9 +92,11 @@ makePlayerTurn(Board, 1, NewBoard):-
 % makeCPUTurn(+Board, +Player, +Difficulty -NewBoard)
 % Goes through a CPU's turn on the game
 makeCPUTurn(Board, 0, Difficulty, NewBoard):-
+    sleep(3),
     placeDiscCPU1(Board, Difficulty, NewBoard).
 
 makeCPUTurn(Board, 1, Difficulty, NewBoard):-
+    sleep(3),
     placeDiscCPU2(Board, Difficulty, NewBoard).
 
 % playPvPGame(+Board, +Player, +Turns, -NewBoard)
@@ -228,10 +230,23 @@ placeDiscPlayer2(Board, NewBoard):-
     readCoordinates('Disc', X, Y),
     ((validateDiscInput(X,Y),validatePlay(Board,X,Y,white)) -> (setPiece(Board,X,Y,white,TempBoard), capturePieces(TempBoard, white, black, X, Y, NewBoard)) ; write('Invalid move, discs must be in the inner 8x8 square, and they must capture an enemy piece\n'), nl, placeDiscPlayer2(Board,NewBoard)).
 
+% getMove(+ValidMoves, +MoveNumber, -Move)
+% Gets a selected move from the valid moves list.
+getMove([ValidMove|_], 1, ValidMove).
+getMove([_|T], MoveNumber, Move):-
+    NextMove is MoveNumber - 1,
+    getMove(T, NextMove, Move).
+
 % placeDiscCPU1(+Board, +Difficulty, -NewBoard)
 % Places a black Disc (owned by a CPU player 1) on the board
 placeDiscCPU1(Board, 1, NewBoard):-
-    !.
+    canPlay(Board, black, ValidMoves),
+    length(ValidMoves, MovesAmount),
+    random(1, MovesAmount, MoveNumber),
+    getMove(ValidMoves, MoveNumber, Move),
+    Move = [X,Y],
+    setPiece(Board, X, Y, black, TempBoard),
+    capturePieces(TempBoard, black, white, X, Y, NewBoard).
 
 placeDiscCPU1(Board, 2, NewBoard):-
     !.
@@ -239,7 +254,13 @@ placeDiscCPU1(Board, 2, NewBoard):-
 % placeDiscCPU2(+Board, +Difficulty, -NewBoard)
 % Places a white Disc (owned by a CPU player 2) on the board
 placeDiscCPU2(Board, 1, NewBoard):-
-    !.
+    canPlay(Board, white, ValidMoves),
+    length(ValidMoves, MovesAmount),
+    random(1, MovesAmount, MoveNumber),
+    getMove(ValidMoves, MoveNumber, Move),
+    Move = [X,Y],
+    setPiece(Board, X, Y, white, TempBoard),
+    capturePieces(TempBoard, white, black, X, Y, NewBoard).
 
 placeDiscCPU2(Board, 2, NewBoard):-
     !.
