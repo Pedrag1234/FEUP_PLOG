@@ -437,18 +437,17 @@ validatePlay(Board,X,Y,Player):-
     checkRightUp(Board,X2,Y1, Player,0);
     checkRightDown(Board,X2,Y2, Player,0)).
 
-% canPlay(+Board, +Player)
+% canPlay(+Board, +Player, -Points)
 % checks if the player can make any plays    
-canPlay(Board,Player,Plays):-
+canPlay(Board,Player,Points):-
     checkAllValidMoves(Board,Player,Points,0,0),
     length(Points,N),
-    N1 is N - 1,
-    (compare(=,N1,0) -> fail),
-    Plays is Points.
+    N1 is N - 1, !,
+    N1 =\= 0.
 
 % checkAllValidMoves(+Board, +Player, -Table, +Y, +X)
-% returns an array with all possible plays   
-checkAllValidMoves(_,_,_,10,_).
+% returns an array with all possible plays
+checkAllValidMoves(_,_,[],10,_).
 checkAllValidMoves(Board, Player, [H|T], Y, X):-
     (validatePlay(Board,X,Y,Player) -> H = [X,Y],MOVE is 0 ; MOVE is 1),
     (compare(=,X,9) -> X1 is 0, Y1 is Y + 1; X1 is X + 1, Y1 is Y),
@@ -726,14 +725,11 @@ checkRightDown(Board,X,Y, Player,N):-
     checkRightDown(Board,X1,Y1, Player,N1)),
     !.
 
-
 game_over(Board, Winner, Skips):-
     isGameOver(Board,0,0,Skips),
     getBlackPlayerScore(Board, N1),
     getWhitePlayerScore(Board,N2),
-    (N1 > N2 -> Winner is black ; Winner is white).
-
-
+    (N1 > N2 -> Winner = black ; Winner = white).
 
 % isGameOver(Board,X,Y,Skips)
 % checks if the game is over
@@ -743,7 +739,7 @@ isGameOver(Board,X,Y,Skips):-
     checkRowEmptyPlaces(Board,X,Y),
     Skips < 2,
     Y1 is Y + 1,
-    isGameOver(Board,X,Y,Skips).
+    isGameOver(Board,X,Y1,Skips).
 
 % checkRowEmptyPlaces(+Board,+X,+Y)
 % checks there is a cell empty in the row
@@ -754,7 +750,6 @@ checkRowEmptyPlaces(Board,X,Y):-
     (compare(=, Rep, '.') -> fail),
     X1 is X + 1,
     checkRowEmptyPlaces(Board,X1,Y).
-    
 
 getBlackPlayerScore(Board,N):-
     getAllBlackRowsScores(Board,0,0,Scores),
@@ -794,14 +789,11 @@ getWhiteRowScore(X,Y,Board,[H|T]):-
     getPiece(Y,X,Board,Piece),
     (compare(=,Piece,white) -> H = 1 , getWhiteRowScore(X1,Y,Board,T); H = 0, getWhiteRowScore(X1,Y,Board,T)).
 
-
-
 testCanMove:-
     initial(B0),
     wallSetupPhase(B0, 8, B1),
     bonusSetupPhase(B1, 8, B2),
-    (canPlay(B2,black) -> write('yes')).
-
+    (canPlay(B2,black, Points) -> write(Points)).
 
 testValidMoves:-
     initial(B0),
