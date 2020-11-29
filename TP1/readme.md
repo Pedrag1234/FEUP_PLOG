@@ -11,6 +11,15 @@
 | Pedro Miguel Oliveira Azevedo | 201603816 |
 | Diogo Ferreira de Sousa | 201706409 |
 
+## Instalação e execução
+
+Extrair os conteúdos do zip e usando o SICStus fazer a consulta do ficheiro game.pl .
+
+Para executar o jogo é necessário executar o predicado play/0. Após executar o predicado pode escolher entre 2 opções :
+- Player vs Player 
+- Player vs CPU
+
+Após selecionar Player vs Player é apenas necessário selecionar as posições do jokers e jogar normalmente. No caso de selecionar Player vs CPU temos de selecionar o lado do CPU, a sua dificuldade, as posições do joker e depois jogar o jogo normalmente.
 
 ## Descrição:
 
@@ -32,7 +41,7 @@ O mapello é uma variante do reversi no qual é adicionado algumas peças extras
 
 ## Representação de Interna do estado do Jogo
 
-O estado do tabuleiro está guardado numa lista de listas (10 x 10) em qual cada posição vai guardar a peça que está aí. No jogador iremos guardar a sua pontuação ,tendo em conta que esta diminui ou aumenta de acordo com as peças que captura e perde, e se tinha passado a ronda anterior.
+O estado do tabuleiro está guardado numa lista de listas (10 x 10) em qual cada posição vai guardar a peça que está aí. Em cada chamada para fazer a jogada passamos o número de bónus colecionados durante o jogo para cada jogador e adiciona esse bónus ao número de peças da mesma cor que cada jogador tem no tabuleiro. 
 
 ### Peças
 As peças na lista de listas são representadas da seguinte forma:
@@ -68,17 +77,17 @@ play:-
 
 ### Estado Intermédio
 
-O estado intermédio do jogo é quando ambos os jogadores conseguem fazer jogadas ou pelo menos um deles consegue jogar, nesta fase vamos adicionando peças brancas e pretas que por sua vez capturam peças dos inimigos ou bonus tornado-as da mesma cor.
-Esta fase ainda não está completamente implementada, pois ainda é necessário realizar a validação da jogada e a mudança da cor das peças.
+O estado intermédio do jogo é quando ambos os jogadores conseguem fazer jogadas ou pelo menos um deles consegue jogar, nesta fase vamos adicionando peças brancas e pretas que por sua vez capturam peças dos inimigos tornado-as da mesma cor. No caso dos bonus
+
 
 #### Play Loop
 ![Play](https://github.com/Pedrag1234/FEUP_PLOG/blob/master/TP1/img/play.PNG)
 
 ### Estado Final
-O jogo entra no estado final quando:
+O jogo termina quando uma das 2 condições é atingingida:
   - Não existem mais espaços vazios no tabuleiro.
   - Ambos os jogadores passam as sua vez.
-Ainda não foi iniciado o trabalho nesta fase, uma vez que ainda é necessário terminar a fase prévia.
+
 
 ## Visualização dos estados do jogo
 
@@ -133,3 +142,73 @@ Cada peça é representada no tabuleiro da seguinte forma:
 - 'G' : parede
 - 'J' : joker
 - 'P' : bonus
+
+### Interações do Utilizador
+
+O utilizado nos vários momentos de utilização é pedido a leitura de vários inputs do utilizador. Os inputs feitos infelizmente não são controlados de qualquer forma, logo inputs incorretos poderão causar problemas na execução do programa.
+
+As várias interações que os utilizadores podem realizar são:
+- Escolher o modo jogo (selecionar entre 1 a 2).
+- Escolher as posições do Jokers (selecionar 8 coordenadas em que o X e o Y estão entre 0 e 9).
+- Escolher a posição da peça a jogar ( 1 coordenada em que o X e o Y estão entre 0 e 9).
+
+//TODO: add Fotos
+
+## Lista de Jogadas Válidas
+
+A lista de todas as jogadas válidas é calculada usando a função valid_moves(+BoardState, +Player, -ListOfMoves) que por sua vez retorna todas as posições das jogadas válidas ou um array vazio.
+
+```prolog
+% canPlay(+Board, +Player)
+% checks if the player can make any plays    
+canPlay(Board,Player,Plays):-
+    checkAllValidMoves(Board,Player,Points,0,0),
+    length(Points,N),
+    N1 is N - 1,
+    (compare(=,N1,0) -> fail),
+    Plays is Points.
+```
+
+Para verificar quais a jogadas possíveis o predicado chama o predicado validate_play(+Board,+X,+Y,+Player) (que retorna se o Player consegue jogar na posição X,Y) para todas as posições vazias do tabuleiro do jogo. 
+
+
+```prolog
+% checkAllValidMoves(+Board, +Player, -Table, +Y, +X)
+% returns an array with all possible plays   
+checkAllValidMoves(_,_,_,10,_).
+checkAllValidMoves(Board, Player, [H|T], Y, X):-
+    (validatePlay(Board,X,Y,Player) -> H = [X,Y],MOVE is 0 ; MOVE is 1),
+    (compare(=,X,9) -> X1 is 0, Y1 is Y + 1; X1 is X + 1, Y1 is Y),
+    (compare(=,MOVE,0) -> checkAllValidMoves(Board, Player, T, Y1, X1) ; (compare(=,Y1,10) -> checkAllValidMoves(Board, Player, T, Y1, X1); checkAllValidMoves(Board, Player, [H|T], Y1, X1) )).
+```
+
+## Execução de Jogadas
+
+A execução de jogadas tem várias funções dependendo do modo de jogo. 
+No caso de Player vs Player é chamado o predicado makePlayerTurn(+Board, +Player, -NewBoard).
+
+```prolog
+% makePlayerTurn(+Board, +Player, -NewBoard)
+% Goes through a player's turn on the game
+makePlayerTurn(Board, 0, NewBoard):-
+    placeDiscPlayer1(Board, NewBoard).
+
+makePlayerTurn(Board, 1, NewBoard):-
+    placeDiscPlayer2(Board, NewBoard).
+```
+
+No caso de Player vs CPU é chamad o predicado makeCPUTurn(+Board, +Player, +Difficulty -NewBoard).
+
+```prolog
+% makeCPUTurn(+Board, +Player, +Difficulty -NewBoard)
+% Goes through a CPU's turn on the game
+makeCPUTurn(Board, 0, Difficulty, NewBoard):-
+    placeDiscCPU1(Board, Difficulty, NewBoard).
+
+makeCPUTurn(Board, 1, Difficulty, NewBoard):-
+    placeDiscCPU2(Board, Difficulty, NewBoard).
+```
+
+## Final do Jogo
+
+A verificação do estado final do jogo é feita usando a função 
