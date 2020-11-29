@@ -172,8 +172,8 @@ checkInput('Joker', X, Y) :-
     (X == 0; X == 9).
 
 checkInput('Disc', X, Y) :-
-    between(0, 9, X),
-    between(0, 9, Y).
+    between(1, 9, X),
+    between(1, 9, Y).
 
 % validateJokerInput(+Xinput, +Yinput)
 % Checks if the coordinates used are valid for placing a Joker
@@ -445,6 +445,11 @@ capturePieceRightDown(Board, _, _, _, _, Board).
 % validatePlay(+Board,+X,+Y,+Player)
 % checks if play made by the player is valid
 validatePlay(Board,X,Y,Player):-
+    checkInput('Disc', X, Y),
+    getPiece(Y,X,Board,Piece),
+    \+compare(=, Piece, black),
+    \+compare(=, Piece, white),
+    \+compare(=, Piece, wall),
     X1 is X - 1,
     X2 is X + 1,
     Y1 is Y - 1,
