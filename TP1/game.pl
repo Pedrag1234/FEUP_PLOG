@@ -439,11 +439,12 @@ validatePlay(Board,X,Y,Player):-
 
 % canPlay(+Board, +Player)
 % checks if the player can make any plays    
-canPlay(Board,Player):-
+canPlay(Board,Player,Plays):-
     checkAllValidMoves(Board,Player,Points,0,0),
     length(Points,N),
     N1 is N - 1,
-    (compare(=,N1,0) -> fail).
+    (compare(=,N1,0) -> fail),
+    Plays is Points.
 
 % checkAllValidMoves(+Board, +Player, -Table, +Y, +X)
 % returns an array with all possible plays   
