@@ -182,6 +182,32 @@ checkAllValidMoves(Board, Player, [H|T], Y, X):-
     (compare(=,MOVE,0) -> checkAllValidMoves(Board, Player, T, Y1, X1) ; (compare(=,Y1,10) -> checkAllValidMoves(Board, Player, T, Y1, X1); checkAllValidMoves(Board, Player, [H|T], Y1, X1) )).
 ```
 
+A validação das jogadas é feita usando a função validatePlay(+Board,+X,+Y,+Player) que por sua vez verifica em todas as direções se existe outra peça (joker ou peça da mesma cor) de forma a que consiga capturar pelo menos uma peça inimiga.
+
+```prolog
+% validatePlay(+Board,+X,+Y,+Player)
+% checks if play made by the player is valid
+validatePlay(Board,X,Y,Player):-
+    checkInput('Disc', X, Y),
+    getPiece(Y,X,Board,Piece),
+    \+compare(=, Piece, black),
+    \+compare(=, Piece, white),
+    \+compare(=, Piece, wall),
+    X1 is X - 1,
+    X2 is X + 1,
+    Y1 is Y - 1,
+    Y2 is Y + 1,
+    (checkLeft(Board,X1,Y, Player,0);
+    checkRight(Board,X2,Y, Player,0);
+    checkUp(Board,X,Y1, Player,0);
+    checkDown(Board,X,Y2, Player,0);
+    checkLeftUp(Board,X1,Y1, Player,0);
+    checkLeftDown(Board,X1,Y2, Player,0);
+    checkRightUp(Board,X2,Y1, Player,0);
+    checkRightDown(Board,X2,Y2, Player,0)).
+```
+
+
 ## Execução de Jogadas
 
 A execução de jogadas tem várias funções dependendo do modo de jogo. 
