@@ -21,8 +21,8 @@ play:-
     write('2 - Player vs CPU'), nl, nl,
     write('Select game mode: '),
     readOption(Input),
-    ((compare(=, Input, 1), setupPvP);
-    (compare(=, Input, 2), setupPvC);
+    ((compare(=, Input, 1), nl, setupPvP);
+    (compare(=, Input, 2), nl, setupPvC);
     (nl, write('Please input 1 or 2, to select the game mode'), nl, play)).
 
 % setupPvP
@@ -33,7 +33,7 @@ setupPvP:-
     nl, write('Performing random Wall and Bonus pieces placement'), nl,
     wallSetupPhase(B0, 8, B1),
     bonusSetupPhase(B1, 8, B2),
-    jokerSetupPhase(B2, 8, B3),
+    jokerSetupPhase(B2, 1, B3),
     playPvPGame(B3, 0, 16, _).
 
 % chooseCPUSide(-Side)
@@ -44,34 +44,34 @@ chooseCPUSide(Side):-
     write('2 - White'), nl, nl,
     write('Select CPU side: '),
     readOption(Input),
-    ((compare(=, Input, 1), Side is 1);
-    (compare(=, Input, 2), Side is 2);
+    ((compare(=, Input, 1), Side is 0);
+    (compare(=, Input, 2), Side is 1);
     (nl, write('Please input 1 or 2, to select the CPU side'), nl, chooseCPUSide(Side))).
 
-% chooseCPUDifficulty(-Difficulty)
+% chooseCPUDifficulty(+Text, -Difficulty)
 % User chooses the difficulty of the CPU (easy/hard)
-chooseCPUDifficulty(Difficulty):-
-    write('CPU Difficulty:'), nl, nl,
+chooseCPUDifficulty(Text, Difficulty):-
+    write('CPU'), write(Text), write('Difficulty:'), nl, nl,
     write('1 - Easy'), nl,
     write('2 - Hard'), nl, nl,
     write('Select CPU difficulty: '),
     readOption(Input),
     ((compare(=, Input, 1), Difficulty is 1);
     (compare(=, Input, 2), Difficulty is 2);
-    (nl, write('Please input 1 or 2, to select the CPU difficulty'), nl, chooseCPUDifficulty(Difficulty))).
+    (nl, write('Please input 1 or 2, to select the CPU difficulty'), nl, chooseCPUDifficulty(Text, Difficulty))).
 
 % setupPvC
 % Starts a new Player vs CPU game
 setupPvC:-
-    chooseCPUSide(Side),
-    chooseCPUDifficulty(Difficulty),
+    chooseCPUSide(Side), nl,
+    chooseCPUDifficulty(' ', Difficulty), nl,
     initRandom,
     initial(B0),
     nl, write('Performing random Wall and Bonus pieces placement'), nl,
     wallSetupPhase(B0, 8, B1),
     bonusSetupPhase(B1, 8, B2),
-    jokerSetupPhase(B2, 8, B3),
-    playPvCGame(B3, 0, 16, _).
+    jokerSetupPhase(B2, 1, B3),
+    playPvCGame(B3, 0, Side, Difficulty, 16, _).
 
 % display_game(+Board, +Player)
 % Displays the current game state, and announces next player turn
@@ -89,15 +89,15 @@ makePlayerTurn(Board, 0, NewBoard):-
 makePlayerTurn(Board, 1, NewBoard):-
     placeDiscPlayer2(Board, NewBoard).
 
-% makeCPUTurn(+Board, +Player, -NewBoard)
+% makeCPUTurn(+Board, +Player, +Difficulty -NewBoard)
 % Goes through a CPU's turn on the game
-makeCPUTurn(Board, 0, NewBoard):-
-    placeDiscCPU1(Board, NewBoard).
+makeCPUTurn(Board, 0, Difficulty, NewBoard):-
+    placeDiscCPU1(Board, Difficulty, NewBoard).
 
-makeCPUTurn(Board, 1, NewBoard):-
-    placeDiscCPU2(Board, NewBoard).
+makeCPUTurn(Board, 1, Difficulty, NewBoard):-
+    placeDiscCPU2(Board, Difficulty, NewBoard).
 
-% playPvPGame(+Board, +Turns, -NewBoard)
+% playPvPGame(+Board, +Player, +Turns, -NewBoard)
 % Goes through each player's turn on the game
 playPvPGame(Board, _, 0, _):-
     printBoard(Board),
@@ -112,21 +112,21 @@ playPvPGame(Board, Player, Turns, NewBoard):-
     makePlayerTurn(Board, PlayerNum, TempBoard),
     playPvPGame(TempBoard, NewPlayer, NewTurns, NewBoard).
 
-% playPvCGame(+Board, +Turns, -NewBoard)
+% playPvCGame(+Board, +Player, +CPUSide, +CPUDifficulty +Turns, -NewBoard)
 % Alternates through the player and the CPU's turn on the game
-playPvCGame(Board, _, 0, _):-
+playPvCGame(Board, _, _, _, 0, _):-
     printBoard(Board),
     write('Game Over!').
 
-playPvCGame(Board, Player, Turns, NewBoard):-
+playPvCGame(Board, Player, CPUSide, CPUDifficulty, Turns, NewBoard):-
     NewTurns is Turns - 1,
     PlayerNum is Player mod 2,
     NewPlayer is Player + 1,
     PlayerDisplay is PlayerNum + 1,
     display_game(Board, PlayerDisplay),
-    ((compare(=, PlayerNum, 0), makePlayerTurn(Board, PlayerNum, TempBoard));
-    (compare(=, PlayerNum, 1), makeCPUTurn(Board, PlayerNum, TempBoard))),
-    playPvCGame(TempBoard, NewPlayer, NewTurns, NewBoard).
+    ((compare(=, PlayerNum, CPUSide), makeCPUTurn(Board, PlayerNum, CPUDifficulty, TempBoard));
+    makePlayerTurn(Board, PlayerNum, TempBoard)),
+    playPvCGame(TempBoard, NewPlayer, CPUSide, CPUDifficulty, NewTurns, NewBoard).
 
 % readInput(-Input)
 % Reads a char input by the player    
@@ -220,21 +220,28 @@ bonusSetupPhase(Board, N, NewBoard):-
 % Places a black Disc (owned by player 1) on the board
 placeDiscPlayer1(Board, NewBoard):-
     readCoordinates('Disc', X, Y),
-    ((validateDiscInput(X,Y),validatePlay(Board,X,Y,black)) -> (setPiece(Board,X,Y,black,TempBoard), capturePieces(TempBoard, black, white, X, Y, NewBoard)) ; write('Discs must be placed in the inner 8x8 square, input again\n'), nl, placeDiscPlayer1(Board,NewBoard)).
+    ((validateDiscInput(X,Y),validatePlay(Board,X,Y,black)) -> (setPiece(Board,X,Y,black,TempBoard), capturePieces(TempBoard, black, white, X, Y, NewBoard)) ; write('Invalid move, discs must be in the inner 8x8 square, and they must capture an enemy piece\n'), nl, placeDiscPlayer1(Board,NewBoard)).
 
 % placeDiscPlayer2(+Board, -NewBoard)
 % Places a white Disc (owned by player 2) on the board
 placeDiscPlayer2(Board, NewBoard):-
     readCoordinates('Disc', X, Y),
-    ((validateDiscInput(X,Y),validatePlay(Board,X,Y,white)) -> (setPiece(Board,X,Y,white,TempBoard), capturePieces(TempBoard, white, black, X, Y, NewBoard)) ; write('Discs must be placed in the inner 8x8 square, input again\n'), nl, placeDiscPlayer2(Board,NewBoard)).
+    ((validateDiscInput(X,Y),validatePlay(Board,X,Y,white)) -> (setPiece(Board,X,Y,white,TempBoard), capturePieces(TempBoard, white, black, X, Y, NewBoard)) ; write('Invalid move, discs must be in the inner 8x8 square, and they must capture an enemy piece\n'), nl, placeDiscPlayer2(Board,NewBoard)).
 
-% placeDiscCPU1(+Board, -NewBoard)
+% placeDiscCPU1(+Board, +Difficulty, -NewBoard)
 % Places a black Disc (owned by a CPU player 1) on the board
-placeDiscCPU1(Board, NewBoard):-
+placeDiscCPU1(Board, 1, NewBoard):-
     !.
-% placeDiscCPU2(+Board, -NewBoard)
+
+placeDiscCPU1(Board, 2, NewBoard):-
+    !.
+
+% placeDiscCPU2(+Board, +Difficulty, -NewBoard)
 % Places a white Disc (owned by a CPU player 2) on the board
-placeDiscCPU2(Board, NewBoard):-
+placeDiscCPU2(Board, 1, NewBoard):-
+    !.
+
+placeDiscCPU2(Board, 2, NewBoard):-
     !.
 
 % placeJoker(+Board, -NewBoard)
@@ -433,7 +440,7 @@ validatePlay(Board,X,Y,Player):-
 % canPlay(+Board, +Player)
 % checks if the player can make any plays    
 canPlay(Board,Player):-
-    checkAllValidMoves(Board,PLayer,Points,0,0),
+    checkAllValidMoves(Board,Player,Points,0,0),
     length(Points,N),
     N1 is N - 1,
     (compare(=,N1,0) -> fail).
@@ -445,9 +452,6 @@ checkAllValidMoves(Board, Player, [H|T], Y, X):-
     (validatePlay(Board,X,Y,Player) -> H = [X,Y],MOVE is 0 ; MOVE is 1),
     (compare(=,X,9) -> X1 is 0, Y1 is Y + 1; X1 is X + 1, Y1 is Y),
     (compare(=,MOVE,0) -> checkAllValidMoves(Board, Player, T, Y1, X1) ; (compare(=,Y1,10) -> checkAllValidMoves(Board, Player, T, Y1, X1); checkAllValidMoves(Board, Player, [H|T], Y1, X1) )).
-
-
-
 
 % checkLeft(+Board,+X,+Y, +Player,+N)
 % checks if play is possible by checking all pieces to the left of the pos
