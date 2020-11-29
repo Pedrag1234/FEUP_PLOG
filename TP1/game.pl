@@ -18,12 +18,14 @@ play:-
     write('##  Mapello  ##'), nl,
     write('###############'), nl, nl,
     write('1 - Player vs Player'), nl,
-    write('2 - Player vs CPU'), nl, nl,
+    write('2 - Player vs CPU'), nl,
+    write('3 - CPU vs CPU'), nl, nl,
     write('Select game mode: '),
     readOption(Input),
     ((compare(=, Input, 1), nl, setupPvP);
     (compare(=, Input, 2), nl, setupPvC);
-    (nl, write('Please input 1 or 2, to select the game mode'), nl, play)).
+    (compare(=, Input, 3), nl, setupCvC);
+    (nl, write('Please input 1, 2 or 3, to select the game mode'), nl, play)).
 
 % setupPvP
 % Starts a new Player vs Player game
@@ -73,6 +75,19 @@ setupPvC:-
     jokerSetupPhase(B2, 1, B3),
     playPvCGame(B3, 0, Side, Difficulty, 16, _).
 
+% setupCvC
+% Starts a new CPU vs CPU game
+setupCvC:-
+    chooseCPUDifficulty(' 1 (Black) ', Difficulty1), nl,
+    chooseCPUDifficulty(' 2 (White) ', Difficulty2), nl,
+    initRandom,
+    initial(B0),
+    nl, write('Performing random Wall and Bonus pieces placement'), nl,
+    wallSetupPhase(B0, 8, B1),
+    bonusSetupPhase(B1, 8, B2),
+    jokerSetupPhase(B2, 1, B3),
+    playCvCGame(B3, 0, Difficulty1, Difficulty2, 16, _).
+
 % display_game(+Board, +Player)
 % Displays the current game state, and announces next player turn
 display_game(Board, Player):-
@@ -92,11 +107,11 @@ makePlayerTurn(Board, 1, NewBoard):-
 % makeCPUTurn(+Board, +Player, +Difficulty -NewBoard)
 % Goes through a CPU's turn on the game
 makeCPUTurn(Board, 0, Difficulty, NewBoard):-
-    sleep(3),
+    sleep(2),
     placeDiscCPU1(Board, Difficulty, NewBoard).
 
 makeCPUTurn(Board, 1, Difficulty, NewBoard):-
-    sleep(3),
+    sleep(2),
     placeDiscCPU2(Board, Difficulty, NewBoard).
 
 % playPvPGame(+Board, +Player, +Turns, -NewBoard)
@@ -129,6 +144,22 @@ playPvCGame(Board, Player, CPUSide, CPUDifficulty, Turns, NewBoard):-
     ((compare(=, PlayerNum, CPUSide), makeCPUTurn(Board, PlayerNum, CPUDifficulty, TempBoard));
     makePlayerTurn(Board, PlayerNum, TempBoard)),
     playPvCGame(TempBoard, NewPlayer, CPUSide, CPUDifficulty, NewTurns, NewBoard).
+
+% playCvCGame(+Board, +Player, +CPU1Difficulty, +CPU2Difficulty, +Turns, -NewBoard)
+% Goes through each CPU's turn on the game
+playCvCGame(Board, _, _, _, 0, _):-
+    printBoard(Board),
+    write('Game Over!').
+
+playCvCGame(Board, Player, CPU1Difficulty, CPU2Difficulty, Turns, NewBoard):-
+    NewTurns is Turns - 1,
+    PlayerNum is Player mod 2,
+    NewPlayer is Player + 1,
+    PlayerDisplay is PlayerNum + 1,
+    display_game(Board, PlayerDisplay),
+    ((compare(=, PlayerNum, 0), makeCPUTurn(Board, PlayerNum, CPU1Difficulty, TempBoard));
+    makeCPUTurn(Board, PlayerNum, CPU2Difficulty, TempBoard)),
+    playCvCGame(TempBoard, NewPlayer, CPU1Difficulty, CPU2Difficulty, NewTurns, NewBoard).
 
 % readInput(-Input)
 % Reads a char input by the player    
