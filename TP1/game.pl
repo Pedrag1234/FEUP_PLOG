@@ -727,6 +727,14 @@ checkRightDown(Board,X,Y, Player,N):-
     !.
 
 
+game_over(Board, Winner, Skips):-
+    isGameOver(Board,0,0,Skips),
+    getBlackPlayerScore(Board, N1),
+    getWhitePlayerScore(Board,N2),
+    (N1 > N2 -> Winner is black ; Winner is white).
+
+
+
 % isGameOver(Board,X,Y,Skips)
 % checks if the game is over
 isGameOver(_,_,10,_).
