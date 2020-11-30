@@ -23,7 +23,7 @@ Após selecionar Player vs Player é apenas necessário selecionar as posições
 
 ## Descrição:
 
-O mapello é uma variante do reversi no qual é adicionado algumas peças extras em comparação com o original, sendo elas as Walls (peças que servem como as paredes do tabuleiro e não podem ser colocadas peças em cima), Bonuses (peças que dão mais pontos a quem os captura) e Jokers (peças normais que pertencem ao jogador atual). O objetivo do jogo é terminar o jogo com o maior número de pontos (pontos = peças + pontos bonus) isto faz-se capturando peças inimigas, tornando as da cor do jogador.
+O Mapello é uma variante do Reversi no qual é adicionado algumas peças extras em comparação com o original, sendo elas as Walls (peças que servem como as paredes do tabuleiro e não podem ser colocadas peças em cima), Bonuses (peças que dão mais pontos a quem os captura) e Jokers (peças normais que pertencem ao jogador atual). O objetivo do jogo é terminar o jogo com o maior número de pontos (pontos = peças + pontos bonus) isto faz-se capturando peças inimigas, tornando as da cor do jogador.
 
 ### Regras
 
@@ -155,7 +155,7 @@ Cada peça é representada no tabuleiro da seguinte forma:
 O utilizador nos vários momentos de utilização são lhe pedidos vários inputs. Os inputs feitos infelizmente não são controlados de qualquer forma, logo inputs incorretos poderão causar problemas na execução do programa.
 
 As várias interações que os utilizadores podem realizar são:
-- Escolher o modo jogo (selecionar entre 1 a 2).
+- Escolher o modo jogo (selecionar entre 1 a 3).
 ![Game Mode](https://github.com/Pedrag1234/FEUP_PLOG/blob/master/TP1/img/menu.PNG)
 - Escolher as posições do Jokers (selecionar 8 coordenadas em que o X e o Y estão entre 0 e 9).
 ![Jokers](https://github.com/Pedrag1234/FEUP_PLOG/blob/master/TP1/img/jokers.PNG)
@@ -359,7 +359,7 @@ canPlay(Board,Player,Points):-
 Devido a limitações de tempo e alguns erros um bocado limitantes não fomos capazes de implementar tudo de forma funcional e sem erros. Alguns dos erros que foram encontrados ao longo do desenvolvimento do projeto:
    - Uma situação semelhante ocorre com a inicialização das peças de bónus e as paredes que ao selecionarem uma posição aleatória se a posição não estiver vazia inserem na mesma essa peça.
 
-Estes erros seriam os importantes de corrigir uma vez que impedem o funcionamento normal do jogo. Também implementar alguma maneira de controlar o input dos utilizadores para impedir erros causados pelos mesmos (Ex.: X = a, casusa terminação). Infelizmente os bonus não conseguiram ser implementados devido a erros que fomos capazes de corrigir, por a pontuação é realizada contando o número de peças que cada jogador tem no tabuleiro.
+Estes erros seriam os importantes de corrigir uma vez que impedem o funcionamento normal do jogo. Também implementar alguma maneira de controlar o input dos utilizadores para impedir erros causados pelos mesmos (Ex.: X = a, casusa terminação). Infelizmente os bonus não conseguiram ser implementados devido a erros que fomos capazes de corrigir, por isso a pontuação é realizada contando o número de peças que cada jogador tem no tabuleiro.
 É de adicionar que o AI está demasiado simplista neste momento e que talvez se conseguissemos aumentar a sua complexidade através de um algoritmo Alfa-Beta Cut com várias heurísticas para avaliação do tabuleiro tornaria os jogos de CPU vs CPU e Player vs CPU mais interessantes e mais desafiantes.
 
 
