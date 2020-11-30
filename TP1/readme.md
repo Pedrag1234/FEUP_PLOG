@@ -18,19 +18,20 @@ Extrair os conteúdos do zip e usando o SICStus fazer a consulta do ficheiro gam
 Para executar o jogo é necessário executar o predicado play/0. Após executar o predicado pode escolher entre 2 opções :
 - Player vs Player 
 - Player vs CPU
+- CPU vs CPU
 
-Após selecionar Player vs Player é apenas necessário selecionar as posições do jokers e jogar normalmente. No caso de selecionar Player vs CPU temos de selecionar o lado do CPU, a sua dificuldade, as posições do joker e depois jogar o jogo normalmente.
+Após selecionar Player vs Player é apenas necessário selecionar as posições do jokers e jogar normalmente. No caso de selecionar Player vs CPU ou CPU vs CPU temos de selecionar o lado do CPU(s), a sua dificuldade(s), as posições do jokeres e depois jogar o jogo normalmente.
 
 ## Descrição:
 
-O Mapello é uma variante do Reversi no qual é adicionado algumas peças extras em comparação com o original, sendo elas as Walls (peças que servem como as paredes do tabuleiro e não podem ser colocadas peças em cima), Bonuses (peças que dão mais pontos a quem os captura) e Jokers (peças normais que pertencem ao jogador atual). O objetivo do jogo é terminar o jogo com o maior número de pontos (pontos = peças + pontos bonus) isto faz-se capturando peças inimigas, tornando as da cor do jogador.
+O Mapello é uma variante do Reversi no qual é adicionado algumas peças extras em comparação com o original, sendo elas as Walls (peças que servem como as paredes do tabuleiro e não podem ser colocadas peças em cima), Bonuses (peças que dão mais pontos a quem os captura) e Jokers (peças normais que pertencem ao jogador atual). O objetivo do jogo é terminar o jogo com o maior número de pontos (pontos = peças + pontos bonus) isto faz-se capturando peças inimigas, tornando as da cor do jogador. Ganha o jogador que tiver mais pontos acumulados no final.
 
 ### Regras
 
 - Apenas pode colocar uma peça por turno
-- No início do jogo, o tabuleiro começa com 4 peças no centro (Ex.: B W | W B), 8 jokers nas bordas do tabuleiro e 8 bonus e paredes no meio do tabuleiro.
+- No início do jogo, o tabuleiro começa com 4 peças no centro (Ex.: B W | W B), 8 jokers nas bordas do tabuleiro e 8 bonus e 8 paredes no meio do tabuleiro.
 - Só pode colocar a peça se consegue capturar peças inimigas (Ex.:B W W _)
-- A peça tem de ser colocada dentro do quadrado interior 8x8
+- A peça tem de ser colocada dentro do quadrado interior 8x8.
 - Se não conseguir colocar nenhuma peça passa a jogada para o próximo jogador.
 - Se os 2 jogadores passarem consecutivos o jogo acaba e ganha quem tiver mais pontos.
 - O jogo acaba quando não houver mais jogadas possíveis (Ex.: Tabuleiro completamente cheio).
@@ -75,6 +76,7 @@ play:-
     (compare(=, Input, 3), nl, setupCvC);
     (nl, write('Please input 1, 2 or 3, to select the game mode'), nl, play)).
  ```
+ 
 #### Setting Random Walls and Bonus
 ![Walls and Bonus](https://github.com/Pedrag1234/FEUP_PLOG/blob/master/TP1/img/RandomwallsandBonus.PNG)
 
@@ -89,7 +91,7 @@ O estado intermédio do jogo é quando ambos os jogadores conseguem fazer jogada
 ![Play](https://github.com/Pedrag1234/FEUP_PLOG/blob/master/TP1/img/play.PNG)
 
 ### Estado Final
-O jogo termina quando uma das 2 condições é atingingida:
+O jogo termina quando uma das 2 condições é atingida:
   - Não existem mais espaços vazios no tabuleiro.
   - Ambos os jogadores passam as sua vez.
 
@@ -359,7 +361,7 @@ canPlay(Board,Player,Points):-
 Devido a limitações de tempo e alguns erros um bocado limitantes não fomos capazes de implementar tudo de forma funcional e sem erros. Alguns dos erros que foram encontrados ao longo do desenvolvimento do projeto:
    - Uma situação semelhante ocorre com a inicialização das peças de bónus e as paredes que ao selecionarem uma posição aleatória se a posição não estiver vazia inserem na mesma essa peça.
 
-Estes erros seriam os importantes de corrigir uma vez que impedem o funcionamento normal do jogo. Também implementar alguma maneira de controlar o input dos utilizadores para impedir erros causados pelos mesmos (Ex.: X = a, casusa terminação). Infelizmente os bonus não conseguiram ser implementados devido a erros que fomos capazes de corrigir, por isso a pontuação é realizada contando o número de peças que cada jogador tem no tabuleiro.
+Estes erros seriam os importantes de corrigir uma vez que impedem o funcionamento normal do jogo. Também implementar alguma maneira de controlar o input dos utilizadores para impedir erros causados pelos mesmos (Ex.:O utilizador insere uma letra em vez de um número a escolher uma coordenada de uma peça o que provoca um erro e termina). Infelizmente os bónus não conseguiram ser implementados devido a erros que fomos capazes de corrigir, por isso a pontuação é realizada contando o número de peças que cada jogador tem no tabuleiro.
 É de adicionar que o AI está demasiado simplista neste momento e que talvez se conseguissemos aumentar a sua complexidade através de um algoritmo Alfa-Beta Cut com várias heurísticas para avaliação do tabuleiro tornaria os jogos de CPU vs CPU e Player vs CPU mais interessantes e mais desafiantes.
 
 
