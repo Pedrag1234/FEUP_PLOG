@@ -85,8 +85,6 @@ play:-
 
 O estado intermédio do jogo é quando ambos os jogadores conseguem fazer jogadas ou pelo menos um deles consegue jogar, nesta fase vamos adicionando peças brancas e pretas que por sua vez capturam peças dos inimigos tornado-as da mesma cor. No caso de ser colocada uma peça no bonus o jogar recebe 5 pontos extra para o seu score permanente.
 
-\\ADD PHOTO
-
 #### Play Loop
 ![Play](https://github.com/Pedrag1234/FEUP_PLOG/blob/master/TP1/img/play.PNG)
 
@@ -150,7 +148,7 @@ Cada peça é representada no tabuleiro da seguinte forma:
 - 'J' : joker
 - '+' : bonus
 
-\\ADD PHOTO
+![Display](https://github.com/Pedrag1234/FEUP_PLOG/blob/master/TP1/img/tabuleiro.PNG)
 
 ### Interações do Utilizador
 
@@ -158,10 +156,13 @@ O utilizador nos vários momentos de utilização são lhe pedidos vários input
 
 As várias interações que os utilizadores podem realizar são:
 - Escolher o modo jogo (selecionar entre 1 a 2).
+![Game Mode](https://github.com/Pedrag1234/FEUP_PLOG/blob/master/TP1/img/menu.PNG)
 - Escolher as posições do Jokers (selecionar 8 coordenadas em que o X e o Y estão entre 0 e 9).
+![Jokers](https://github.com/Pedrag1234/FEUP_PLOG/blob/master/TP1/img/jokers.PNG)
 - Escolher a posição da peça a jogar ( 1 coordenada em que o X e o Y estão entre 0 e 9).
-
-\\ADD PHOTOS
+![Play piece](https://github.com/Pedrag1234/FEUP_PLOG/blob/master/TP1/img/play.PNG)
+- Escolher a dificuldade do AI.
+![AI choice](https://github.com/Pedrag1234/FEUP_PLOG/blob/master/TP1/img/AIdifficulty.PNG)
 
 ## Lista de Jogadas Válidas
 
