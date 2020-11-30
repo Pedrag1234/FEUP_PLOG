@@ -35,7 +35,7 @@ setupPvP:-
     nl, write('Performing random Wall and Bonus pieces placement'), nl,
     wallSetupPhase(B0, 8, B1),
     bonusSetupPhase(B1, 8, B2),
-    jokerSetupPhase(B2, 1, B3),
+    jokerSetupPhase(B2, 8, B3),
     playPvPGame(B3, 0, _, 0).
 
 % chooseCPUSide(-Side)
@@ -72,8 +72,8 @@ setupPvC:-
     nl, write('Performing random Wall and Bonus pieces placement'), nl,
     wallSetupPhase(B0, 8, B1),
     bonusSetupPhase(B1, 8, B2),
-    jokerSetupPhase(B2, 1, B3),
-    playPvCGame(B3, 0, Side, Difficulty, 16, _).
+    jokerSetupPhase(B2, 8, B3),
+    playPvCGame(B3, 0, Side, Difficulty, _, 0).
 
 % setupCvC
 % Starts a new CPU vs CPU game
@@ -85,8 +85,8 @@ setupCvC:-
     nl, write('Performing random Wall and Bonus pieces placement'), nl,
     wallSetupPhase(B0, 8, B1),
     bonusSetupPhase(B1, 8, B2),
-    jokerSetupPhase(B2, 1, B3),
-    playCvCGame(B3, 0, Difficulty1, Difficulty2, 16, _).
+    jokerSetupPhase(B2, 8, B3),
+    playCvCGame(B3, 0, Difficulty1, Difficulty2, _, 0).
 
 % display_game(+Board, +Player)
 % Displays the current game state, and announces next player turn
@@ -103,11 +103,11 @@ copyBoard(Board, Board).
 % makePlayerTurn(+Board, +Player, -NewBoard, -Skipped)
 % Goes through a player's turn on the game
 makePlayerTurn(Board, 0, NewBoard, Skipped):-
-    (canPlay(Board, black, Points), write(Points), nl, Skipped is 0, placeDiscPlayer1(Board, NewBoard));
+    (canPlay(Board, black, _), Skipped is 0, placeDiscPlayer1(Board, NewBoard));
     (copyBoard(Board, NewBoard), Skipped is 1).
 
 makePlayerTurn(Board, 1, NewBoard, Skipped):-
-    (canPlay(Board, white, Points), write(Points), nl, Skipped is 0, placeDiscPlayer2(Board, NewBoard));
+    (canPlay(Board, white, _), Skipped is 0, placeDiscPlayer2(Board, NewBoard));
     (copyBoard(Board, NewBoard), Skipped is 1).
 
 % makeCPUTurn(+Board, +Player, +Difficulty, -NewBoard, -Skipped)
@@ -122,7 +122,7 @@ makeCPUTurn(Board, 1, Difficulty, NewBoard, Skipped):-
     (canPlay(Board, white, _), Skipped is 0, placeDiscCPU2(Board, Difficulty, NewBoard));
     (copyBoard(Board, NewBoard), Skipped is 1).
 
-% playPvPGame(+Board, +Player, -NewBoard, -Skipped)
+% playPvPGame(+Board, +Player, -NewBoard, +Skips)
 % Goes through each player's turn on the game
 playPvPGame(Board, Player, NewBoard, Skips):-
     (game_over(Board, Skips), true);
@@ -134,29 +134,31 @@ playPvPGame(Board, Player, NewBoard, Skips):-
     ((Skipped = 0, playPvPGame(TempBoard, NewPlayer, NewBoard, 0));
     (Skipped = 1, write('Cannot make a valid move, skipping turn'), nl, NewSkips is Skips + 1, playPvPGame(TempBoard, NewPlayer, NewBoard, NewSkips))).
 
-% playPvCGame(+Board, +Player, +CPUSide, +CPUDifficulty +Turns, -NewBoard)
+% playPvCGame(+Board, +Player, +CPUSide, +CPUDifficulty, -NewBoard, +Skips)
 % Alternates through the player and the CPU's turn on the game
-playPvCGame(Board, Player, CPUSide, CPUDifficulty, Turns, NewBoard):-
-    NewTurns is Turns - 1,
+playPvCGame(Board, Player, CPUSide, CPUDifficulty, NewBoard, Skips):-
+    (game_over(Board, Skips), true);
     PlayerNum is Player mod 2,
     NewPlayer is Player + 1,
     PlayerDisplay is PlayerNum + 1,
     display_game(Board, PlayerDisplay),
-    ((compare(=, PlayerNum, CPUSide), makeCPUTurn(Board, PlayerNum, CPUDifficulty, TempBoard));
-    makePlayerTurn(Board, PlayerNum, TempBoard)),
-    playPvCGame(TempBoard, NewPlayer, CPUSide, CPUDifficulty, NewTurns, NewBoard).
+    ((compare(=, PlayerNum, CPUSide), makeCPUTurn(Board, PlayerNum, CPUDifficulty, TempBoard, Skipped));
+    makePlayerTurn(Board, PlayerNum, TempBoard, Skipped)),
+    ((Skipped = 0, playPvCGame(TempBoard, NewPlayer, CPUSide, CPUDifficulty, NewBoard, 0));
+    (Skipped = 1, write('Cannot make a valid move, skipping turn'), nl, NewSkips is Skips + 1, playPvCGame(TempBoard, NewPlayer, CPUSide, CPUDifficulty, NewBoard, NewSkips))).
 
-% playCvCGame(+Board, +Player, +CPU1Difficulty, +CPU2Difficulty, +Turns, -NewBoard)
+% playCvCGame(+Board, +Player, +CPU1Difficulty, +CPU2Difficulty, -NewBoard, +Skips)
 % Goes through each CPU's turn on the game
-playCvCGame(Board, Player, CPU1Difficulty, CPU2Difficulty, Turns, NewBoard):-
-    NewTurns is Turns - 1,
+playCvCGame(Board, Player, CPU1Difficulty, CPU2Difficulty, NewBoard, Skips):-
+    (game_over(Board, Skips), true);
     PlayerNum is Player mod 2,
     NewPlayer is Player + 1,
     PlayerDisplay is PlayerNum + 1,
     display_game(Board, PlayerDisplay),
-    ((compare(=, PlayerNum, 0), makeCPUTurn(Board, PlayerNum, CPU1Difficulty, TempBoard));
-    makeCPUTurn(Board, PlayerNum, CPU2Difficulty, TempBoard)),
-    playCvCGame(TempBoard, NewPlayer, CPU1Difficulty, CPU2Difficulty, NewTurns, NewBoard).
+    ((compare(=, PlayerNum, 0), makeCPUTurn(Board, PlayerNum, CPU1Difficulty, TempBoard, Skipped));
+    makeCPUTurn(Board, PlayerNum, CPU2Difficulty, TempBoard, Skipped)),
+    ((Skipped = 0, playCvCGame(TempBoard, NewPlayer, CPU1Difficulty, CPU2Difficulty, NewBoard, 0));
+    (Skipped = 1, write('Cannot make a valid move, skipping turn'), nl, NewSkips is Skips + 1, playPvCGame(TempBoard, NewPlayer, CPU1Difficulty, CPU2Difficulty, NewBoard, NewSkips))).
 
 % readInput(-Input)
 % Reads a char input by the player    
