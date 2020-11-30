@@ -30,6 +30,7 @@ O mapello é uma variante do reversi no qual é adicionado algumas peças extras
 - Apenas pode colocar uma peça por turno
 - No início do jogo, o tabuleiro começa com 4 peças no centro (Ex.: B W | W B), 8 jokers nas bordas do tabuleiro e 8 bonus e paredes no meio do tabuleiro.
 - Só pode colocar a peça se consegue capturar peças inimigas (Ex.:B W W _)
+- A peça tem de ser colocada dentro do quadrado interior 8x8
 - Se não conseguir colocar nenhuma peça passa a jogada para o próximo jogador.
 - Se os 2 jogadores passarem consecutivos o jogo acaba e ganha quem tiver mais pontos.
 - O jogo acaba quando não houver mais jogadas possíveis (Ex.: Tabuleiro completamente cheio).
@@ -61,13 +62,18 @@ No estado inicial temos um tabuleiro N * N gerado pela função na qual preenche
 % play
 % Starts a new game
 play:-
-   initRandom,
-   initial(B0),
-   nl, write('Performing random Wall and Bonus pieces placement'), nl,
-   wallSetupPhase(B0, 8, B1),
-   bonusSetupPhase(B1, 8, B2),
-   jokerSetupPhase(B2, 8, B3),
-   playGame(B3, 0, 16, _).
+    nl, write('###############'), nl,
+    write('##  Mapello  ##'), nl,
+    write('###############'), nl, nl,
+    write('1 - Player vs Player'), nl,
+    write('2 - Player vs CPU'), nl,
+    write('3 - CPU vs CPU'), nl, nl,
+    write('Select game mode: '),
+    readOption(Input),
+    ((compare(=, Input, 1), nl, setupPvP);
+    (compare(=, Input, 2), nl, setupPvC);
+    (compare(=, Input, 3), nl, setupCvC);
+    (nl, write('Please input 1, 2 or 3, to select the game mode'), nl, play)).
  ```
 #### Setting Random Walls and Bonus
 ![Walls and Bonus](https://github.com/Pedrag1234/FEUP_PLOG/blob/master/TP1/img/RandomwallsandBonus.PNG)
@@ -77,8 +83,9 @@ play:-
 
 ### Estado Intermédio
 
-O estado intermédio do jogo é quando ambos os jogadores conseguem fazer jogadas ou pelo menos um deles consegue jogar, nesta fase vamos adicionando peças brancas e pretas que por sua vez capturam peças dos inimigos tornado-as da mesma cor. No caso dos bonus
+O estado intermédio do jogo é quando ambos os jogadores conseguem fazer jogadas ou pelo menos um deles consegue jogar, nesta fase vamos adicionando peças brancas e pretas que por sua vez capturam peças dos inimigos tornado-as da mesma cor. No caso de ser colocada uma peça no bonus o jogar recebe 5 pontos extra para o seu score permanente.
 
+\\ADD PHOTO
 
 #### Play Loop
 ![Play](https://github.com/Pedrag1234/FEUP_PLOG/blob/master/TP1/img/play.PNG)
@@ -88,6 +95,7 @@ O jogo termina quando uma das 2 condições é atingingida:
   - Não existem mais espaços vazios no tabuleiro.
   - Ambos os jogadores passam as sua vez.
 
+\\ADD PHOTO
 
 ## Visualização dos estados do jogo
 
@@ -143,16 +151,18 @@ Cada peça é representada no tabuleiro da seguinte forma:
 - 'J' : joker
 - 'P' : bonus
 
+\\ADD PHOTO
+
 ### Interações do Utilizador
 
-O utilizado nos vários momentos de utilização é pedido a leitura de vários inputs do utilizador. Os inputs feitos infelizmente não são controlados de qualquer forma, logo inputs incorretos poderão causar problemas na execução do programa.
+O utilizador nos vários momentos de utilização são lhe pedidos vários inputs. Os inputs feitos infelizmente não são controlados de qualquer forma, logo inputs incorretos poderão causar problemas na execução do programa.
 
 As várias interações que os utilizadores podem realizar são:
 - Escolher o modo jogo (selecionar entre 1 a 2).
 - Escolher as posições do Jokers (selecionar 8 coordenadas em que o X e o Y estão entre 0 e 9).
 - Escolher a posição da peça a jogar ( 1 coordenada em que o X e o Y estão entre 0 e 9).
 
-//TODO: add Fotos
+\\ADD PHOTOS
 
 ## Lista de Jogadas Válidas
 
@@ -197,14 +207,14 @@ validatePlay(Board,X,Y,Player):-
     X2 is X + 1,
     Y1 is Y - 1,
     Y2 is Y + 1,
-    (checkLeft(Board,X1,Y, Player,0);
-    checkRight(Board,X2,Y, Player,0);
-    checkUp(Board,X,Y1, Player,0);
-    checkDown(Board,X,Y2, Player,0);
-    checkLeftUp(Board,X1,Y1, Player,0);
-    checkLeftDown(Board,X1,Y2, Player,0);
-    checkRightUp(Board,X2,Y1, Player,0);
-    checkRightDown(Board,X2,Y2, Player,0)).
+    ((checkLeft(Board,X1,Y,Player,0,Pieces1), Pieces1 > 0);
+    (checkRight(Board,X2,Y,Player,0,Pieces2), Pieces2 > 0);
+    (checkUp(Board,X,Y1,Player,0,Pieces3), Pieces3 > 0);
+    (checkDown(Board,X,Y2,Player,0,Pieces4), Pieces4 > 0);
+    (checkLeftUp(Board,X1,Y1,Player,0,Pieces5), Pieces5 > 0);
+    (checkLeftDown(Board,X1,Y2,Player,0,Pieces6), Pieces6 > 0);
+    (checkRightUp(Board,X2,Y1,Player,0,Pieces7), Pieces7 > 0);
+    (checkRightDown(Board,X2,Y2,Player,0,Pieces8), Pieces8 > 0)).
 ```
 
 
@@ -214,44 +224,56 @@ A execução de jogadas tem várias funções dependendo do modo de jogo.
 No caso de Player vs Player é chamado o predicado makePlayerTurn(+Board, +Player, -NewBoard).
 
 ```prolog
-% makePlayerTurn(+Board, +Player, -NewBoard)
+% makePlayerTurn(+Board, +Player, -NewBoard, -Skipped)
 % Goes through a player's turn on the game
-makePlayerTurn(Board, 0, NewBoard):-
-    placeDiscPlayer1(Board, NewBoard).
+makePlayerTurn(Board, 0, NewBoard, Skipped):-
+    (canPlay(Board, black, Points), write(Points), nl, Skipped is 0, placeDiscPlayer1(Board, NewBoard));
+    (copyBoard(Board, NewBoard), Skipped is 1).
 
-makePlayerTurn(Board, 1, NewBoard):-
-    placeDiscPlayer2(Board, NewBoard).
+makePlayerTurn(Board, 1, NewBoard, Skipped):-
+    (canPlay(Board, white, Points), write(Points), nl, Skipped is 0, placeDiscPlayer2(Board, NewBoard));
+    (copyBoard(Board, NewBoard), Skipped is 1).
 ```
 
 No caso de Player vs CPU é chamada o predicado makeCPUTurn(+Board, +Player, +Difficulty -NewBoard).
 
 ```prolog
-% makeCPUTurn(+Board, +Player, +Difficulty -NewBoard)
+% makeCPUTurn(+Board, +Player, +Difficulty, -NewBoard, -Skipped)
 % Goes through a CPU's turn on the game
-makeCPUTurn(Board, 0, Difficulty, NewBoard):-
-    placeDiscCPU1(Board, Difficulty, NewBoard).
+makeCPUTurn(Board, 0, Difficulty, NewBoard, Skipped):-
+    sleep(2),
+    (canPlay(Board, black, _), Skipped is 0, placeDiscCPU1(Board, Difficulty, NewBoard));
+    (copyBoard(Board, NewBoard), Skipped is 1).
 
-makeCPUTurn(Board, 1, Difficulty, NewBoard):-
-    placeDiscCPU2(Board, Difficulty, NewBoard).
+makeCPUTurn(Board, 1, Difficulty, NewBoard, Skipped):-
+    sleep(2),
+    (canPlay(Board, white, _), Skipped is 0, placeDiscCPU2(Board, Difficulty, NewBoard));
+    (copyBoard(Board, NewBoard), Skipped is 1).
 ```
 
 ## Final do Jogo
 
 A verificação do estado final do jogo é feita usando a função game_over(+Board-,Winner,+Skips), que por sua vez retorna os jogador com o maior score.
 
+
 ```prolog
-% game_over(+Board-,Winner,+Skips)
+% game_over(+Board,+Skips)
 % returns winner of the game
-game_over(Board, Winner, Skips):-
+game_over(Board, Skips):-
     isGameOver(Board,0,0,Skips),
-    getBlackPlayerScore(Board, N1),
+    nl, write('Game Over!'), nl,
+    getBlackPlayerScore(Board,N1),
     getWhitePlayerScore(Board,N2),
-    (N1 > N2 -> Winner is black ; Winner is white).
+    write('Player 1 (Black) Score: '), write(N1), nl,
+    write('Player 2 (White) Score: '), write(N2), nl,
+    ((N1 > N2, write('Player 1 wins!'), nl);
+    (N2 > N1, write('Player 2 wins!'), nl);
+    (N1 = N2, write('It\'s a draw!'), nl)).
 ```
 
 ## Avaliação do Tabuleiro
 
-A avaliação do tabuleiro é feita usando o número de peças do player presentes, isto é quanto mais peças presentes no tabuleiro melhor será o score. Esta avaliação é feita usando a
+A avaliação do tabuleiro é feita usando o número de peças do player presentes, isto é quanto mais peças presentes no tabuleiro melhor será o score. Esta avaliação é feita usando as funções getBlackPlayerScore(+Board,-N) e getWhitePlayerScore(+Board,-N)
 
 ```prolog
 % getBlackPlayerScore(+Board,-N)
@@ -286,6 +308,8 @@ makeCPUTurn(Board, 1, Difficulty, NewBoard):-
 ```
 
 No caso de dificuldade ser fácil, o AI escolhe de todas as jogadas possíveis uma aleatória usando as funções placeDiscCPU1(+Board, +Difficulty, -NewBoard) e placeDiscCPU2(+Board, +Difficulty, -NewBoard). 
+
+// TO BE CHANGED
 
 ```prolog
 % placeDiscCPU1(+Board, +Difficulty, -NewBoard)
