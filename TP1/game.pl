@@ -36,7 +36,7 @@ setupPvP:-
     wallSetupPhase(B0, 8, B1),
     bonusSetupPhase(B1, 8, B2),
     jokerSetupPhase(B2, 1, B3),
-    playPvPGame(B3, 0, 16, _).
+    playPvPGame(B3, 0, _, 0).
 
 % chooseCPUSide(-Side)
 % User decides whether the CPU controls black or white discs
@@ -96,46 +96,46 @@ display_game(Board, Player):-
     write(Player),
     write(' Turn'), nl.
 
-% makePlayerTurn(+Board, +Player, -NewBoard)
+% copyBoard(+Board, -NewBoard)
+% Copies the current board onto another board variable
+copyBoard(Board, Board).
+
+% makePlayerTurn(+Board, +Player, -NewBoard, -Skipped)
 % Goes through a player's turn on the game
-makePlayerTurn(Board, 0, NewBoard):-
-    placeDiscPlayer1(Board, NewBoard).
+makePlayerTurn(Board, 0, NewBoard, Skipped):-
+    (canPlay(Board, black, Points), write(Points), nl, Skipped is 0, placeDiscPlayer1(Board, NewBoard));
+    (copyBoard(Board, NewBoard), Skipped is 1).
 
-makePlayerTurn(Board, 1, NewBoard):-
-    placeDiscPlayer2(Board, NewBoard).
+makePlayerTurn(Board, 1, NewBoard, Skipped):-
+    (canPlay(Board, white, Points), write(Points), nl, Skipped is 0, placeDiscPlayer2(Board, NewBoard));
+    (copyBoard(Board, NewBoard), Skipped is 1).
 
-% makeCPUTurn(+Board, +Player, +Difficulty -NewBoard)
+% makeCPUTurn(+Board, +Player, +Difficulty, -NewBoard, -Skipped)
 % Goes through a CPU's turn on the game
-makeCPUTurn(Board, 0, Difficulty, NewBoard):-
+makeCPUTurn(Board, 0, Difficulty, NewBoard, Skipped):-
     sleep(2),
-    placeDiscCPU1(Board, Difficulty, NewBoard).
+    (canPlay(Board, black, _), Skipped is 0, placeDiscCPU1(Board, Difficulty, NewBoard));
+    (copyBoard(Board, NewBoard), Skipped is 1).
 
-makeCPUTurn(Board, 1, Difficulty, NewBoard):-
+makeCPUTurn(Board, 1, Difficulty, NewBoard, Skipped):-
     sleep(2),
-    placeDiscCPU2(Board, Difficulty, NewBoard).
+    (canPlay(Board, white, _), Skipped is 0, placeDiscCPU2(Board, Difficulty, NewBoard));
+    (copyBoard(Board, NewBoard), Skipped is 1).
 
-% playPvPGame(+Board, +Player, +Turns, -NewBoard)
+% playPvPGame(+Board, +Player, -NewBoard, -Skipped)
 % Goes through each player's turn on the game
-playPvPGame(Board, _, 0, _,_):-
-    printBoard(Board),
-    write('Game Over!').
-
-playPvPGame(Board, Player, Turns, NewBoard, Skips):-
-    NewTurns is Turns - 1,
+playPvPGame(Board, Player, NewBoard, Skips):-
+    (game_over(Board, Skips), true);
     PlayerNum is Player mod 2,
     NewPlayer is Player + 1,
     PlayerDisplay is PlayerNum + 1,
     display_game(Board, PlayerDisplay),
-    (makePlayerTurn(Board, PlayerNum, TempBoard) -> Skips1 is Skips + 1 ; Skips1 is 0),
-    (isGameOver(Board,0,0,Skips) , playPvPGame(TempBoard, NewPlayer, 0, NewBoard,Skips1)); 
-    playPvPGame(TempBoard, NewPlayer, NewTurns, NewBoard,Skips1).
+    makePlayerTurn(Board, PlayerNum, TempBoard, Skipped),
+    ((Skipped = 0, playPvPGame(TempBoard, NewPlayer, NewBoard, 0));
+    (Skipped = 1, write('Cannot make a valid move, skipping turn'), nl, NewSkips is Skips + 1, playPvPGame(TempBoard, NewPlayer, NewBoard, NewSkips))).
 
 % playPvCGame(+Board, +Player, +CPUSide, +CPUDifficulty +Turns, -NewBoard)
 % Alternates through the player and the CPU's turn on the game
-playPvCGame(Board, _, _, _, 0, _):-
-    printBoard(Board),
-    write('Game Over!').
-
 playPvCGame(Board, Player, CPUSide, CPUDifficulty, Turns, NewBoard):-
     NewTurns is Turns - 1,
     PlayerNum is Player mod 2,
@@ -148,10 +148,6 @@ playPvCGame(Board, Player, CPUSide, CPUDifficulty, Turns, NewBoard):-
 
 % playCvCGame(+Board, +Player, +CPU1Difficulty, +CPU2Difficulty, +Turns, -NewBoard)
 % Goes through each CPU's turn on the game
-playCvCGame(Board, _, _, _, 0, _):-
-    printBoard(Board),
-    write('Game Over!').
-
 playCvCGame(Board, Player, CPU1Difficulty, CPU2Difficulty, Turns, NewBoard):-
     NewTurns is Turns - 1,
     PlayerNum is Player mod 2,
@@ -204,8 +200,8 @@ checkInput('Joker', X, Y) :-
     (X == 0; X == 9).
 
 checkInput('Disc', X, Y) :-
-    between(1, 9, X),
-    between(1, 9, Y).
+    between(1, 8, X),
+    between(1, 8, Y).
 
 % validateJokerInput(+Xinput, +Yinput)
 % Checks if the coordinates used are valid for placing a Joker
@@ -737,13 +733,18 @@ checkRightDown(Board,X,Y,white,N,Pieces):-
 
 checkRightDown(_,_,_,_,0,0).
 
-% game_over(+Board-,Winner,+Skips)
+% game_over(+Board,+Skips)
 % returns winner of the game
-game_over(Board, Winner, Skips):-
+game_over(Board, Skips):-
     isGameOver(Board,0,0,Skips),
-    getBlackPlayerScore(Board, N1),
+    nl, write('Game Over!'), nl,
+    getBlackPlayerScore(Board,N1),
     getWhitePlayerScore(Board,N2),
-    (N1 > N2 -> Winner = black ; Winner = white).
+    write('Player 1 (Black) Score: '), write(N1), nl,
+    write('Player 2 (White) Score: '), write(N2), nl,
+    ((N1 > N2, write('Player 1 wins!'), nl);
+    (N2 > N1, write('Player 2 wins!'), nl);
+    (N1 = N2, write('It\'s a draw!'), nl)).
 
 % isGameOver(Board,X,Y,Skips)
 % checks if the game is over
