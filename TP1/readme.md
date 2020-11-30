@@ -147,9 +147,9 @@ Cada peça é representada no tabuleiro da seguinte forma:
 - 'W' : peças brancas
 - 'B' : peças pretas
 - '.' : espaço vazio
-- 'G' : parede
+- '#' : parede
 - 'J' : joker
-- 'P' : bonus
+- '+' : bonus
 
 \\ADD PHOTO
 
