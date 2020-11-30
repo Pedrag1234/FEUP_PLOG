@@ -15,12 +15,12 @@
 
 Extrair os conteúdos do zip e usando o SICStus fazer a consulta do ficheiro game.pl .
 
-Para executar o jogo é necessário executar o predicado play/0. Após executar o predicado pode escolher entre 2 opções :
+Para executar o jogo é necessário executar o predicado play/0. Após executar o predicado pode escolher entre 3 opções :
 - Player vs Player 
 - Player vs CPU
 - CPU vs CPU
 
-Após selecionar Player vs Player é apenas necessário selecionar as posições do jokers e jogar normalmente. No caso de selecionar Player vs CPU ou CPU vs CPU temos de selecionar o lado do CPU(s), a sua dificuldade(s), as posições do jokeres e depois jogar o jogo normalmente.
+Após selecionar Player vs Player é apenas necessário selecionar as posições dos jokers e jogar normalmente. No caso de selecionar Player vs CPU, é preciso seleccionar o lado do CPU, a sua dificuldade, e as posições dos jokers. Finalmente, no caso de seleccionar CPU vs CPU, é preciso selecionar as dificuldades de cada CPU individualmente e as posições dos jokers.
 
 ## Descrição:
 
