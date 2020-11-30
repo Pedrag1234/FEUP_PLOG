@@ -255,18 +255,18 @@ A verificação do estado final do jogo é feita usando a função game_over(+Bo
 
 
 ```prolog
-% game_over(+Board,+Skips)
-% returns winner of the game
-game_over(Board, Skips):-
+% game_over(+Board,+Skips,-Winner)
+% Returns winner of the game
+game_over(Board, Skips, Winner):-
     isGameOver(Board,0,0,Skips),
     nl, write('Game Over!'), nl,
-    getBlackPlayerScore(Board,N1),
-    getWhitePlayerScore(Board,N2),
-    write('Player 1 (Black) Score: '), write(N1), nl,
-    write('Player 2 (White) Score: '), write(N2), nl,
-    ((N1 > N2, write('Player 1 wins!'), nl);
-    (N2 > N1, write('Player 2 wins!'), nl);
-    (N1 = N2, write('It\'s a draw!'), nl)).
+    value(Board,black,V1),
+    value(Board,white,V2),
+    write('Player 1 (Black) Score: '), write(V1), nl,
+    write('Player 2 (White) Score: '), write(V2), nl,
+    ((V1 > V2, Winner = 'Player 1 wins!');
+    (V2 > V1, Winner = 'Player 2 wins!');
+    (V1 = V2, Winner = 'It\'s a draw!')).
 ```
 
 ## Avaliação do Tabuleiro
