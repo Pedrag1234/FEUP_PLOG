@@ -95,8 +95,7 @@ O jogo termina quando uma das 2 condições é atingingida:
   - Não existem mais espaços vazios no tabuleiro.
   - Ambos os jogadores passam as sua vez.
 
-\\ADD PHOTO
-
+![Game Over](https://github.com/Pedrag1234/FEUP_PLOG/blob/master/TP1/img/GameOver.PNG)
 ## Visualização dos estados do jogo
 
 A visualização do tabuleiro é feita chamando a função:
