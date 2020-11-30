@@ -169,17 +169,13 @@ As várias interações que os utilizadores podem realizar são:
 A lista de todas as jogadas válidas é calculada usando a função valid_moves(+BoardState, +Player, -ListOfMoves) que por sua vez retorna todas as posições das jogadas válidas ou um array vazio.
 
 ```prolog
-% canPlay(+Board, +Player)
-% checks if the player can make any plays    
-canPlay(Board,Player,Plays):-
-    checkAllValidMoves(Board,Player,Points,0,0),
-    length(Points,N),
-    N1 is N - 1,
-    (compare(=,N1,0) -> fail),
-    Plays is Points.
+% valid_moves(+GameState, +Player, -ListOfMoves)
+% Returns a list with all valid moves by the player on the given game state.
+valid_moves(GameState, Player, ListOfMoves):-
+    checkAllValidMoves(GameState, Player, ListOfMoves, 0, 0).
 ```
 
-Para verificar quais a jogadas possíveis o predicado chama o predicado validate_play(+Board,+X,+Y,+Player) (que retorna se o Player consegue jogar na posição X,Y) para todas as posições vazias do tabuleiro do jogo. 
+Para verificar quais a jogadas possíveis o predicado chama o predicado checkAllValidMoves(+Board, +Player, -Table, +Y, +X) (que retorna se o Player consegue jogar na posição X,Y) para todas as posições vazias do tabuleiro do jogo. 
 
 
 ```prolog
@@ -221,34 +217,34 @@ validatePlay(Board,X,Y,Player):-
 ## Execução de Jogadas
 
 A execução de jogadas tem várias funções dependendo do modo de jogo. 
-No caso de Player vs Player é chamado o predicado makePlayerTurn(+Board, +Player, -NewBoard).
+No caso de Player vs Player é chamado o predicado move(+GameState, +Player, -NewBoard, -Skipped).
 
 ```prolog
-% makePlayerTurn(+Board, +Player, -NewBoard, -Skipped)
+% move(+GameState, +Player, -NewBoard, -Skipped)
 % Goes through a player's turn on the game
-makePlayerTurn(Board, 0, NewBoard, Skipped):-
-    (canPlay(Board, black, Points), write(Points), nl, Skipped is 0, placeDiscPlayer1(Board, NewBoard));
-    (copyBoard(Board, NewBoard), Skipped is 1).
+move(GameState, 0, NewBoard, Skipped):-
+    (canPlay(GameState, black, _), Skipped is 0, placeDiscPlayer1(GameState, NewBoard));
+    (copyBoard(GameState, NewBoard), Skipped is 1).
 
-makePlayerTurn(Board, 1, NewBoard, Skipped):-
-    (canPlay(Board, white, Points), write(Points), nl, Skipped is 0, placeDiscPlayer2(Board, NewBoard));
-    (copyBoard(Board, NewBoard), Skipped is 1).
+move(GameState, 1, NewBoard, Skipped):-
+    (canPlay(GameState, white, _), placeDiscPlayer2(GameState, NewBoard));
+    (copyBoard(GameState, NewBoard), Skipped is 1).
 ```
 
-No caso de Player vs CPU é chamada o predicado makeCPUTurn(+Board, +Player, +Difficulty -NewBoard).
+No caso de Player vs CPU ou CPU vs CPU é chamada o predicado choose_move(+GameState, +Player, +Level, -NewBoard, -Skipped).
 
 ```prolog
-% makeCPUTurn(+Board, +Player, +Difficulty, -NewBoard, -Skipped)
+% choose_move(+GameState, +Player, +Level, -NewBoard, -Skipped)
 % Goes through a CPU's turn on the game
-makeCPUTurn(Board, 0, Difficulty, NewBoard, Skipped):-
-    sleep(2),
-    (canPlay(Board, black, _), Skipped is 0, placeDiscCPU1(Board, Difficulty, NewBoard));
-    (copyBoard(Board, NewBoard), Skipped is 1).
+choose_move(GameState, 0, Level, NewBoard, Skipped):-
+    sleep(2), % purely for aesthetic reasons while watching the CPU's play
+    (canPlay(GameState, black, _), Skipped is 0, placeDiscCPU1(GameState, Level, NewBoard));
+    (copyBoard(GameState, NewBoard), Skipped is 1).
 
-makeCPUTurn(Board, 1, Difficulty, NewBoard, Skipped):-
-    sleep(2),
-    (canPlay(Board, white, _), Skipped is 0, placeDiscCPU2(Board, Difficulty, NewBoard));
-    (copyBoard(Board, NewBoard), Skipped is 1).
+choose_move(GameState, 1, Level, NewBoard, Skipped):-                                                                       
+    sleep(2), % purely for aesthetic reasons while watching the CPU's play
+    (canPlay(GameState, white, _), Skipped is 0, placeDiscCPU2(GameState, Level, NewBoard));
+    (copyBoard(GameState, NewBoard), Skipped is 1).
 ```
 
 ## Final do Jogo
@@ -273,43 +269,40 @@ game_over(Board, Skips):-
 
 ## Avaliação do Tabuleiro
 
-A avaliação do tabuleiro é feita usando o número de peças do player presentes, isto é quanto mais peças presentes no tabuleiro melhor será o score. Esta avaliação é feita usando as funções getBlackPlayerScore(+Board,-N) e getWhitePlayerScore(+Board,-N)
+A avaliação do tabuleiro é feita usando o número de peças do player presentes, isto é quanto mais peças presentes no tabuleiro melhor será o score. Esta avaliação é feita usando as value(+GameState,+Player,-Value).
 
 ```prolog
-% getBlackPlayerScore(+Board,-N)
-% checks there is a cell empty in the row
-getBlackPlayerScore(Board,N):-
-    getAllBlackRowsScores(Board,0,0,Scores),
-    sumlist(Scores,CombScores),
-    N = CombScores.
+% value(+GameState,+Player,-Value)
+% Calculates the score of the given player, according to the given game state
+value(GameState,black,Value):-
+    getAllBlackRowsScores(GameState,0,0,Scores),
+    sumlist(Scores,Value).
 
-% getWhitePlayerScore(+Board,-N)
-% checks there is a cell empty in the row
-getWhitePlayerScore(Board,N):-
-    getAllWhiteRowsScores(Board,0,0,Scores),
-    sumlist(Scores,CombScores),
-    N = CombScores.
+value(GameState,white,Value):-
+    getAllWhiteRowsScores(GameState,0,0,Scores),
+    sumlist(Scores,Value).
 ```
 
 ## Jogada do Computador
 
-O computador para fazer a sua jogada usa a função makeCPUTurn(+Board, +Player, +Difficulty -NewBoard) na qual tem comportamentos diferentes dependendo da dificuldade escolhida. 
+O computador para fazer a sua jogada usa a função choose_move(+GameState, +Player, +Level, -NewBoard, -Skipped) na qual tem comportamentos diferentes dependendo da dificuldade escolhida. 
 
 ```prolog
-% makeCPUTurn(+Board, +Player, +Difficulty -NewBoard)
+% choose_move(+GameState, +Player, +Level, -NewBoard, -Skipped)
 % Goes through a CPU's turn on the game
-makeCPUTurn(Board, 0, Difficulty, NewBoard):-
-    sleep(2),
-    placeDiscCPU1(Board, Difficulty, NewBoard).
+choose_move(GameState, 0, Level, NewBoard, Skipped):-
+    sleep(2), % purely for aesthetic reasons while watching the CPU's play
+    (canPlay(GameState, black, _), Skipped is 0, placeDiscCPU1(GameState, Level, NewBoard));
+    (copyBoard(GameState, NewBoard), Skipped is 1).
 
-makeCPUTurn(Board, 1, Difficulty, NewBoard):-
-    sleep(2),
-    placeDiscCPU2(Board, Difficulty, NewBoard).
+choose_move(GameState, 1, Level, NewBoard, Skipped):-                                                                       
+    sleep(2), % purely for aesthetic reasons while watching the CPU's play
+    (canPlay(GameState, white, _), Skipped is 0, placeDiscCPU2(GameState, Level, NewBoard));
+    (copyBoard(GameState, NewBoard), Skipped is 1).
 ```
 
 No caso de dificuldade ser fácil, o AI escolhe de todas as jogadas possíveis uma aleatória usando as funções placeDiscCPU1(+Board, +Difficulty, -NewBoard) e placeDiscCPU2(+Board, +Difficulty, -NewBoard). 
 
-// TO BE CHANGED
 
 ```prolog
 % placeDiscCPU1(+Board, +Difficulty, -NewBoard)
@@ -321,10 +314,14 @@ placeDiscCPU1(Board, 1, NewBoard):-
     getMove(ValidMoves, MoveNumber, Move),
     Move = [X,Y],
     setPiece(Board, X, Y, black, TempBoard),
-    capturePieces(TempBoard, black, white, X, Y, NewBoard).
+    capturePieces(TempBoard, black, X, Y, NewBoard).
 
 placeDiscCPU1(Board, 2, NewBoard):-
-    !.
+    canPlay(Board, black, ValidMoves),
+    getBestMove(Board, ValidMoves, black, 0, _, BestMove),
+    BestMove = [X,Y],
+    setPiece(Board, X, Y, black, TempBoard),
+    capturePieces(TempBoard, black, X, Y, NewBoard).
 
 % placeDiscCPU2(+Board, +Difficulty, -NewBoard)
 % Places a white Disc (owned by a CPU player 2) on the board
@@ -335,60 +332,35 @@ placeDiscCPU2(Board, 1, NewBoard):-
     getMove(ValidMoves, MoveNumber, Move),
     Move = [X,Y],
     setPiece(Board, X, Y, white, TempBoard),
-    capturePieces(TempBoard, white, black, X, Y, NewBoard).
+    capturePieces(TempBoard, white, X, Y, NewBoard).
 
 placeDiscCPU2(Board, 2, NewBoard):-
-    !.
+    canPlay(Board, white, ValidMoves),
+    getBestMove(Board, ValidMoves, white, 0, _, BestMove),
+    BestMove = [X,Y],
+    setPiece(Board, X, Y, white, TempBoard),
+    capturePieces(TempBoard, white, X, Y, NewBoard).
 ```
 
-As jogadas aleatórias são obtidas usando a usando a funçao canPlay(+Board, +Player, -ValidMoves) que retorna uma lista de coordenadas de todas as jogadas que possam ser feitas.
+As jogadas aleatórias são obtidas usando a usando a funçao canPlay(+Board, +Player, -Points) que retorna uma lista de coordenadas de todas as jogadas que possam ser feitas.
 
 ```prolog
 % canPlay(+Board, +Player, -Points)
 % checks if the player can make any plays    
 canPlay(Board,Player,Points):-
-    checkAllValidMoves(Board,Player,Points,0,0),
+    valid_moves(Board, Player, Points),
     length(Points,N),
     N1 is N - 1, !,
     N1 =\= 0.
-    
-% checkAllValidMoves(+Board, +Player, -Table, +Y, +X)
-% returns an array with all possible plays
-checkAllValidMoves(_,_,[],10,_).
-checkAllValidMoves(Board, Player, [H|T], Y, X):-
-    (validatePlay(Board,X,Y,Player) -> H = [X,Y],MOVE is 0 ; MOVE is 1),
-    (compare(=,X,9) -> X1 is 0, Y1 is Y + 1; X1 is X + 1, Y1 is Y),
-    (compare(=,MOVE,0) -> checkAllValidMoves(Board, Player, T, Y1, X1) ; (compare(=,Y1,10) -> checkAllValidMoves(Board, Player, T, Y1, X1); checkAllValidMoves(Board, Player, [H|T], Y1, X1) )).
-
-% validatePlay(+Board,+X,+Y,+Player)
-% checks if play made by the player is valid
-validatePlay(Board,X,Y,Player):-
-    checkInput('Disc', X, Y),
-    getPiece(Y,X,Board,Piece),
-    \+compare(=, Piece, black),
-    \+compare(=, Piece, white),
-    \+compare(=, Piece, wall),
-    X1 is X - 1,
-    X2 is X + 1,
-    Y1 is Y - 1,
-    Y2 is Y + 1,
-    (checkLeft(Board,X1,Y, Player,0);
-    checkRight(Board,X2,Y, Player,0);
-    checkUp(Board,X,Y1, Player,0);
-    checkDown(Board,X,Y2, Player,0);
-    checkLeftUp(Board,X1,Y1, Player,0);
-    checkLeftDown(Board,X1,Y2, Player,0);
-    checkRightUp(Board,X2,Y1, Player,0);
-    checkRightDown(Board,X2,Y2, Player,0)).
 ```
 
 ## Conclusões:
 
 Devido a limitações de tempo e alguns erros um bocado limitantes não fomos capazes de implementar tudo de forma funcional e sem erros. Alguns dos erros que foram encontrados ao longo do desenvolvimento do projeto:
-   - O número de peças retornado pelas funções de avaliação do score em alguns casos são valores errados devido ao facto de não contar corretamente o número de peças (ao comparamos a peça numa posição com a peça da cor do jogador apesar de ser verdade retorna falso).
    - Uma situação semelhante ocorre com a inicialização das peças de bónus e as paredes que ao selecionarem uma posição aleatória se a posição não estiver vazia inserem na mesma essa peça.
 
-Estes erros seriam os importantes de corrigir uma vez que impedem o funcionamento normal do jogo. Também implementar alguma maneira de controlar o input dos utilizadores para impedir erros causados pelos mesmos (Ex.: X = a, casusa terminação).É de adicionar que o AI está demasiado simplista neste momento e que talvez se conseguissemos aumentar a sua complexidade através de um algoritmo Alfa-Beta Cut com várias heurísticas para avaliação do tabuleiro tornaria os jogos de CPU vs CPU e Player vs CPU mais interessantes e mais desafiantes.
+Estes erros seriam os importantes de corrigir uma vez que impedem o funcionamento normal do jogo. Também implementar alguma maneira de controlar o input dos utilizadores para impedir erros causados pelos mesmos (Ex.: X = a, casusa terminação). Infelizmente os bonus não conseguiram ser implementados devido a erros que fomos capazes de corrigir, por a pontuação é realizada contando o número de peças que cada jogador tem no tabuleiro.
+É de adicionar que o AI está demasiado simplista neste momento e que talvez se conseguissemos aumentar a sua complexidade através de um algoritmo Alfa-Beta Cut com várias heurísticas para avaliação do tabuleiro tornaria os jogos de CPU vs CPU e Player vs CPU mais interessantes e mais desafiantes.
 
 
 ## Bibliografia
