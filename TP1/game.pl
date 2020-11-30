@@ -107,11 +107,11 @@ makePlayerTurn(Board, 1, NewBoard):-
 % makeCPUTurn(+Board, +Player, +Difficulty -NewBoard)
 % Goes through a CPU's turn on the game
 makeCPUTurn(Board, 0, Difficulty, NewBoard):-
-    %sleep(2),
+    sleep(2),
     placeDiscCPU1(Board, Difficulty, NewBoard).
 
 makeCPUTurn(Board, 1, Difficulty, NewBoard):-
-    %sleep(2),
+    sleep(2),
     placeDiscCPU2(Board, Difficulty, NewBoard).
 
 % playPvPGame(+Board, +Player, +Turns, -NewBoard)
@@ -270,7 +270,7 @@ getMove([_|T], MoveNumber, Move):-
 
 % getBestMove(+Board, +ValidMoves, +Player, +BestCaptures, +StoredMove, -BestMove)
 % Gets the best possible move (move that would result in the most piece captures) from the valid moves list.
-getBestMove(_, [], _, _, BestMove, BestMove).
+getBestMove(_, [_|[]], _, _, BestMove, BestMove).
 getBestMove(Board, [Move|T], Player, BestCaptures, StoredMove, BestMove):-
     Move = [X,Y],
     checkTotalCaptures(Board, Player, X, Y, Captures),
@@ -308,7 +308,7 @@ placeDiscCPU2(Board, 1, NewBoard):-
 
 placeDiscCPU2(Board, 2, NewBoard):-
     canPlay(Board, white, ValidMoves),
-    getBestMove(Board, ValidMoves, black, 0, _, BestMove),
+    getBestMove(Board, ValidMoves, white, 0, _, BestMove),
     BestMove = [X,Y],
     setPiece(Board, X, Y, white, TempBoard),
     capturePieces(TempBoard, white, X, Y, NewBoard).
@@ -357,9 +357,7 @@ checkTotalCaptures(Board, Player, X, Y, Captures) :-
     checkLeftDown(Board, X1, Y2, Player, 0, Pieces6),
     checkRightUp(Board, X2, Y1, Player, 0, Pieces7),
     checkRightDown(Board, X2, Y2, Player, 0, Pieces8),
-    write('before Captures'), nl,
-    Captures is (Pieces1 + Pieces2 + Pieces3 + Pieces4 + Pieces5 + Pieces6 + Pieces7 + Pieces8),
-    write('after Captures'), nl.
+    Captures is (Pieces1 + Pieces2 + Pieces3 + Pieces4 + Pieces5 + Pieces6 + Pieces7 + Pieces8).
 
 % capturePieces(+Board, +Player, +X, +Y, -NewBoard)
 % Checks if there are capturable pieces in all possible directions, and captures them if possible
