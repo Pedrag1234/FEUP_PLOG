@@ -51,11 +51,11 @@ chooseCPUSide(Side):-
     (nl, write('Please input 1 or 2, to select the CPU side'), nl, chooseCPUSide(Side))).
 
 % chooseCPUDifficulty(+Text, -Difficulty)
-% User chooses the difficulty of the CPU (easy/hard)
+% User chooses the difficulty of the CPU (easy/medium)
 chooseCPUDifficulty(Text, Difficulty):-
     write('CPU'), write(Text), write('Difficulty:'), nl, nl,
     write('1 - Easy'), nl,
-    write('2 - Hard'), nl, nl,
+    write('2 - Medium'), nl, nl,
     write('Select CPU difficulty: '),
     readOption(Input),
     ((compare(=, Input, 1), Difficulty is 1);
@@ -107,11 +107,11 @@ makePlayerTurn(Board, 1, NewBoard):-
 % makeCPUTurn(+Board, +Player, +Difficulty -NewBoard)
 % Goes through a CPU's turn on the game
 makeCPUTurn(Board, 0, Difficulty, NewBoard):-
-    sleep(2),
+    %sleep(2),
     placeDiscCPU1(Board, Difficulty, NewBoard).
 
 makeCPUTurn(Board, 1, Difficulty, NewBoard):-
-    sleep(2),
+    %sleep(2),
     placeDiscCPU2(Board, Difficulty, NewBoard).
 
 % playPvPGame(+Board, +Player, +Turns, -NewBoard)
@@ -268,6 +268,15 @@ getMove([_|T], MoveNumber, Move):-
     NextMove is MoveNumber - 1,
     getMove(T, NextMove, Move).
 
+% getBestMove(+Board, +ValidMoves, +Player, +BestCaptures, +StoredMove, -BestMove)
+% Gets the best possible move (move that would result in the most piece captures) from the valid moves list.
+getBestMove(_, [], _, _, BestMove, BestMove).
+getBestMove(Board, [Move|T], Player, BestCaptures, StoredMove, BestMove):-
+    Move = [X,Y],
+    checkTotalCaptures(Board, Player, X, Y, Captures),
+    ((Captures > BestCaptures, getBestMove(Board, T, Player, Captures, Move, BestMove));
+    getBestMove(Board, T, Player, BestCaptures, StoredMove, BestMove)).
+
 % placeDiscCPU1(+Board, +Difficulty, -NewBoard)
 % Places a black Disc (owned by a CPU player 1) on the board
 placeDiscCPU1(Board, 1, NewBoard):-
@@ -280,7 +289,11 @@ placeDiscCPU1(Board, 1, NewBoard):-
     capturePieces(TempBoard, black, X, Y, NewBoard).
 
 placeDiscCPU1(Board, 2, NewBoard):-
-    !.
+    canPlay(Board, black, ValidMoves),
+    getBestMove(Board, ValidMoves, black, 0, _, BestMove),
+    BestMove = [X,Y],
+    setPiece(Board, X, Y, black, TempBoard),
+    capturePieces(TempBoard, black, X, Y, NewBoard).
 
 % placeDiscCPU2(+Board, +Difficulty, -NewBoard)
 % Places a white Disc (owned by a CPU player 2) on the board
@@ -294,7 +307,11 @@ placeDiscCPU2(Board, 1, NewBoard):-
     capturePieces(TempBoard, white, X, Y, NewBoard).
 
 placeDiscCPU2(Board, 2, NewBoard):-
-    !.
+    canPlay(Board, white, ValidMoves),
+    getBestMove(Board, ValidMoves, black, 0, _, BestMove),
+    BestMove = [X,Y],
+    setPiece(Board, X, Y, white, TempBoard),
+    capturePieces(TempBoard, white, X, Y, NewBoard).
 
 % placeJoker(+Board, -NewBoard)
 % Places a Joker on the board
@@ -324,6 +341,25 @@ initial(X):-
     createEmptyBoard(B0),
     setInitialPieces(B0,B1),
     X = B1.
+
+% checkTotalCaptures(+Board, +Player, +X, +Y, -Captures)
+% Returns the amount of enemy piece captures that would occur after placing a piece on a given position
+checkTotalCaptures(Board, Player, X, Y, Captures) :-
+    X1 is X - 1,
+    X2 is X + 1,
+    Y1 is Y - 1,
+    Y2 is Y + 1,
+    checkLeft(Board, X1, Y, Player, 0, Pieces1),
+    checkRight(Board, X2, Y, Player, 0, Pieces2),
+    checkUp(Board, X, Y1, Player, 0, Pieces3),
+    checkDown(Board, X, Y2, Player, 0, Pieces4),
+    checkLeftUp(Board, X1, Y1, Player, 0, Pieces5),
+    checkLeftDown(Board, X1, Y2, Player, 0, Pieces6),
+    checkRightUp(Board, X2, Y1, Player, 0, Pieces7),
+    checkRightDown(Board, X2, Y2, Player, 0, Pieces8),
+    write('before Captures'), nl,
+    Captures is (Pieces1 + Pieces2 + Pieces3 + Pieces4 + Pieces5 + Pieces6 + Pieces7 + Pieces8),
+    write('after Captures'), nl.
 
 % capturePieces(+Board, +Player, +X, +Y, -NewBoard)
 % Checks if there are capturable pieces in all possible directions, and captures them if possible
@@ -437,14 +473,14 @@ validatePlay(Board,X,Y,Player):-
     X2 is X + 1,
     Y1 is Y - 1,
     Y2 is Y + 1,
-    ((checkLeft(Board,X1,Y,Player,0,Pieces), Pieces > 0);
-    (checkRight(Board,X2,Y,Player,0,Pieces), Pieces > 0);
-    (checkUp(Board,X,Y1,Player,0,Pieces), Pieces > 0);
-    (checkDown(Board,X,Y2,Player,0,Pieces), Pieces > 0);
-    (checkLeftUp(Board,X1,Y1,Player,0,Pieces), Pieces > 0);
-    (checkLeftDown(Board,X1,Y2,Player,0,Pieces), Pieces > 0);
-    (checkRightUp(Board,X2,Y1,Player,0,Pieces), Pieces > 0);
-    (checkRightDown(Board,X2,Y2,Player,0,Pieces), Pieces > 0)).
+    ((checkLeft(Board,X1,Y,Player,0,Pieces1), Pieces1 > 0);
+    (checkRight(Board,X2,Y,Player,0,Pieces2), Pieces2 > 0);
+    (checkUp(Board,X,Y1,Player,0,Pieces3), Pieces3 > 0);
+    (checkDown(Board,X,Y2,Player,0,Pieces4), Pieces4 > 0);
+    (checkLeftUp(Board,X1,Y1,Player,0,Pieces5), Pieces5 > 0);
+    (checkLeftDown(Board,X1,Y2,Player,0,Pieces6), Pieces6 > 0);
+    (checkRightUp(Board,X2,Y1,Player,0,Pieces7), Pieces7 > 0);
+    (checkRightDown(Board,X2,Y2,Player,0,Pieces8), Pieces8 > 0)).
 
 % canPlay(+Board, +Player, -Points)
 % checks if the player can make any plays    
@@ -683,7 +719,7 @@ checkRightDown(Board,X,Y,black,N,Pieces):-
     \+compare(=, Piece, bonus),
     ((compare(=, Piece, black) ; compare(=, Piece, joker)) -> Pieces is N ;
     N1 is N + 1,
-    checkRightDown(Board,X1,Y1,black,N1,N1)),
+    checkRightDown(Board,X1,Y1,black,N1,Pieces)),
     !.
 
 checkRightDown(Board,X,Y,white,N,Pieces):-
