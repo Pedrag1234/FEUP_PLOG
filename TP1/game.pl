@@ -116,19 +116,18 @@ makeCPUTurn(Board, 1, Difficulty, NewBoard):-
 
 % playPvPGame(+Board, +Player, +Turns, -NewBoard)
 % Goes through each player's turn on the game
-playPvPGame(Board, _, 0, _, _):-
+playPvPGame(Board, _, 0, _):-
     printBoard(Board),
     write('Game Over!').
 
-playPvPGame(Board, Player, Turns, NewBoard, Skips):-
+playPvPGame(Board, Player, Turns, NewBoard):-
     NewTurns is Turns - 1,
     PlayerNum is Player mod 2,
     NewPlayer is Player + 1,
     PlayerDisplay is PlayerNum + 1,
     display_game(Board, PlayerDisplay),
-    (makePlayerTurn(Board, PlayerNum, TempBoard) -> Skips1 is Skips + 1 ; Skips1 is 0),
-    (isGameOver(Board,0,0,Skips) , playPvPGame(TempBoard, NewPlayer, 0, NewBoard,Skips1)); 
-    playPvPGame(TempBoard, NewPlayer, NewTurns, NewBoard,Skips1).
+    makePlayerTurn(Board, PlayerNum, TempBoard),
+    playPvPGame(TempBoard, NewPlayer, NewTurns, NewBoard).
 
 % playPvCGame(+Board, +Player, +CPUSide, +CPUDifficulty +Turns, -NewBoard)
 % Alternates through the player and the CPU's turn on the game
