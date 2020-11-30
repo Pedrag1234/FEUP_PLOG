@@ -100,65 +100,70 @@ display_game(Board, Player):-
 % Copies the current board onto another board variable
 copyBoard(Board, Board).
 
-% makePlayerTurn(+Board, +Player, -NewBoard, -Skipped)
+% move(+GameState, +Player, -NewBoard, -Skipped)
 % Goes through a player's turn on the game
-makePlayerTurn(Board, 0, NewBoard, Skipped):-
-    (canPlay(Board, black, _), Skipped is 0, placeDiscPlayer1(Board, NewBoard));
-    (copyBoard(Board, NewBoard), Skipped is 1).
+move(GameState, 0, NewBoard, Skipped):-
+    (canPlay(GameState, black, _), Skipped is 0, placeDiscPlayer1(GameState, NewBoard));
+    (copyBoard(GameState, NewBoard), Skipped is 1).
 
-makePlayerTurn(Board, 1, NewBoard, Skipped):-
-    (canPlay(Board, white, _), Skipped is 0, placeDiscPlayer2(Board, NewBoard));
-    (copyBoard(Board, NewBoard), Skipped is 1).
+move(GameState, 1, NewBoard, Skipped):-
+    (canPlay(GameState, white, _), placeDiscPlayer2(GameState, NewBoard));
+    (copyBoard(GameState, NewBoard), Skipped is 1).
 
-% makeCPUTurn(+Board, +Player, +Difficulty, -NewBoard, -Skipped)
+% choose_move(+GameState, +Player, +Level, -NewBoard, -Skipped)
 % Goes through a CPU's turn on the game
-makeCPUTurn(Board, 0, Difficulty, NewBoard, Skipped):-
-    sleep(2),
-    (canPlay(Board, black, _), Skipped is 0, placeDiscCPU1(Board, Difficulty, NewBoard));
-    (copyBoard(Board, NewBoard), Skipped is 1).
+choose_move(GameState, 0, Level, NewBoard, Skipped):-
+    sleep(2), % purely for aesthetic reasons while watching the CPU's play
+    (canPlay(GameState, black, _), Skipped is 0, placeDiscCPU1(GameState, Level, NewBoard));
+    (copyBoard(GameState, NewBoard), Skipped is 1).
 
-makeCPUTurn(Board, 1, Difficulty, NewBoard, Skipped):-
-    sleep(2),
-    (canPlay(Board, white, _), Skipped is 0, placeDiscCPU2(Board, Difficulty, NewBoard));
-    (copyBoard(Board, NewBoard), Skipped is 1).
+choose_move(GameState, 1, Level, NewBoard, Skipped):-                                                                       
+    sleep(2), % purely for aesthetic reasons while watching the CPU's play
+    (canPlay(GameState, white, _), Skipped is 0, placeDiscCPU2(GameState, Level, NewBoard));
+    (copyBoard(GameState, NewBoard), Skipped is 1).
+
+% congratulate(+Winner)
+% Announces the victor of the game
+congratulate(Winner):-
+    write(Winner), nl.
 
 % playPvPGame(+Board, +Player, -NewBoard, +Skips)
 % Goes through each player's turn on the game
 playPvPGame(Board, Player, NewBoard, Skips):-
-    (game_over(Board, Skips), true);
+    (game_over(Board, Skips, Winner), congratulate(Winner), true);
     PlayerNum is Player mod 2,
     NewPlayer is Player + 1,
     PlayerDisplay is PlayerNum + 1,
     display_game(Board, PlayerDisplay),
-    makePlayerTurn(Board, PlayerNum, TempBoard, Skipped),
+    move(Board, PlayerNum, TempBoard, Skipped),
     ((Skipped = 0, playPvPGame(TempBoard, NewPlayer, NewBoard, 0));
     (Skipped = 1, write('Cannot make a valid move, skipping turn'), nl, NewSkips is Skips + 1, playPvPGame(TempBoard, NewPlayer, NewBoard, NewSkips))).
 
 % playPvCGame(+Board, +Player, +CPUSide, +CPUDifficulty, -NewBoard, +Skips)
 % Alternates through the player and the CPU's turn on the game
 playPvCGame(Board, Player, CPUSide, CPUDifficulty, NewBoard, Skips):-
-    (game_over(Board, Skips), true);
+    (game_over(Board, Skips, Winner), congratulate(Winner), true);
     PlayerNum is Player mod 2,
     NewPlayer is Player + 1,
     PlayerDisplay is PlayerNum + 1,
     display_game(Board, PlayerDisplay),
-    ((compare(=, PlayerNum, CPUSide), makeCPUTurn(Board, PlayerNum, CPUDifficulty, TempBoard, Skipped));
-    makePlayerTurn(Board, PlayerNum, TempBoard, Skipped)),
+    ((compare(=, PlayerNum, CPUSide), choose_move(Board, PlayerNum, CPUDifficulty, TempBoard, Skipped));
+    move(Board, PlayerNum, TempBoard, Skipped)),
     ((Skipped = 0, playPvCGame(TempBoard, NewPlayer, CPUSide, CPUDifficulty, NewBoard, 0));
     (Skipped = 1, write('Cannot make a valid move, skipping turn'), nl, NewSkips is Skips + 1, playPvCGame(TempBoard, NewPlayer, CPUSide, CPUDifficulty, NewBoard, NewSkips))).
 
 % playCvCGame(+Board, +Player, +CPU1Difficulty, +CPU2Difficulty, -NewBoard, +Skips)
 % Goes through each CPU's turn on the game
 playCvCGame(Board, Player, CPU1Difficulty, CPU2Difficulty, NewBoard, Skips):-
-    (game_over(Board, Skips), true);
+    (game_over(Board, Skips, Winner), congratulate(Winner), true);
     PlayerNum is Player mod 2,
     NewPlayer is Player + 1,
     PlayerDisplay is PlayerNum + 1,
     display_game(Board, PlayerDisplay),
-    ((compare(=, PlayerNum, 0), makeCPUTurn(Board, PlayerNum, CPU1Difficulty, TempBoard, Skipped));
-    makeCPUTurn(Board, PlayerNum, CPU2Difficulty, TempBoard, Skipped)),
+    ((compare(=, PlayerNum, 0), choose_move(Board, PlayerNum, CPU1Difficulty, TempBoard, Skipped));
+    choose_move(Board, PlayerNum, CPU2Difficulty, TempBoard, Skipped)),
     ((Skipped = 0, playCvCGame(TempBoard, NewPlayer, CPU1Difficulty, CPU2Difficulty, NewBoard, 0));
-    (Skipped = 1, write('Cannot make a valid move, skipping turn'), nl, NewSkips is Skips + 1, playPvCGame(TempBoard, NewPlayer, CPU1Difficulty, CPU2Difficulty, NewBoard, NewSkips))).
+    (Skipped = 1, write('Cannot make a valid move, skipping turn'), nl, NewSkips is Skips + 1, playCvCGame(TempBoard, NewPlayer, CPU1Difficulty, CPU2Difficulty, NewBoard, NewSkips))).
 
 % readInput(-Input)
 % Reads a char input by the player    
@@ -482,13 +487,18 @@ validatePlay(Board,X,Y,Player):-
 % canPlay(+Board, +Player, -Points)
 % checks if the player can make any plays    
 canPlay(Board,Player,Points):-
-    checkAllValidMoves(Board,Player,Points,0,0),
+    valid_moves(Board, Player, Points),
     length(Points,N),
     N1 is N - 1, !,
     N1 =\= 0.
 
+% valid_moves(+GameState, +Player, -ListOfMoves)
+% Returns a list with all valid moves by the player on the given game state.
+valid_moves(GameState, Player, ListOfMoves):-
+    checkAllValidMoves(GameState, Player, ListOfMoves, 0, 0).
+
 % checkAllValidMoves(+Board, +Player, -Table, +Y, +X)
-% returns an array with all possible plays
+% Checks all potential moves, and builds a list out of the moves that are valid
 checkAllValidMoves(_,_,[],10,_).
 checkAllValidMoves(Board, Player, [H|T], Y, X):-
     (validatePlay(Board,X,Y,Player) -> H = [X,Y],MOVE is 0 ; MOVE is 1),
@@ -735,18 +745,18 @@ checkRightDown(Board,X,Y,white,N,Pieces):-
 
 checkRightDown(_,_,_,_,0,0).
 
-% game_over(+Board,+Skips)
-% returns winner of the game
-game_over(Board, Skips):-
+% game_over(+Board,+Skips,-Winner)
+% Returns winner of the game
+game_over(Board, Skips, Winner):-
     isGameOver(Board,0,0,Skips),
     nl, write('Game Over!'), nl,
-    getBlackPlayerScore(Board,N1),
-    getWhitePlayerScore(Board,N2),
-    write('Player 1 (Black) Score: '), write(N1), nl,
-    write('Player 2 (White) Score: '), write(N2), nl,
-    ((N1 > N2, write('Player 1 wins!'), nl);
-    (N2 > N1, write('Player 2 wins!'), nl);
-    (N1 = N2, write('It\'s a draw!'), nl)).
+    value(Board,black,V1),
+    value(Board,white,V2),
+    write('Player 1 (Black) Score: '), write(V1), nl,
+    write('Player 2 (White) Score: '), write(V2), nl,
+    ((V1 > V2, Winner = 'Player 1 wins!');
+    (V2 > V1, Winner = 'Player 2 wins!');
+    (V1 = V2, Winner = 'It\'s a draw!')).
 
 % isGameOver(Board,X,Y,Skips)
 % checks if the game is over
@@ -768,19 +778,15 @@ checkRowEmptyPlaces(Board,X,Y):-
     X1 is X + 1,
     checkRowEmptyPlaces(Board,X1,Y).
 
-% getBlackPlayerScore(+Board,-N)
-% checks there is a cell empty in the row
-getBlackPlayerScore(Board,N):-
-    getAllBlackRowsScores(Board,0,0,Scores),
-    sumlist(Scores,CombScores),
-    N = CombScores.
+% value(+GameState,+Player,-Value)
+% Calculates the score of the given player, according to the given game state
+value(GameState,black,Value):-
+    getAllBlackRowsScores(GameState,0,0,Scores),
+    sumlist(Scores,Value).
 
-% getWhitePlayerScore(+Board,-N)
-% checks there is a cell empty in the row
-getWhitePlayerScore(Board,N):-
-    getAllWhiteRowsScores(Board,0,0,Scores),
-    sumlist(Scores,CombScores),
-    N = CombScores.
+value(GameState,white,Value):-
+    getAllWhiteRowsScores(GameState,0,0,Scores),
+    sumlist(Scores,Value).
 
 getAllBlackRowsScores(_,_,10,_).
 getAllBlackRowsScores(Board,X,Y,[H|T]):-
@@ -809,16 +815,3 @@ getWhiteRowScore(X,Y,Board,[H|T]):-
     X1 is X + 1,
     getPiece(Y,X,Board,Piece),
     (compare(=,Piece,white) -> H = 1 , getWhiteRowScore(X1,Y,Board,T); H = 0, getWhiteRowScore(X1,Y,Board,T)).
-    
-testCalculateScores:-
-    initial(B0),
-    wallSetupPhase(B0, 8, B1),
-    bonusSetupPhase(B1, 8, B2),
-    getBlackPlayerScore(B2,N1),
-    getWhitePlayerScore(B2,N2),
-    write('Test 1 = '), write(N1), nl,
-    write('Test 2 = '), write(N2), nl.
-
-testGameOver:-
-    initial(B0),
-    (isGameOver(B0,0,0,0) -> write('Game is Over') ; write('Game is not Over')).
