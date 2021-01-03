@@ -22,18 +22,28 @@ equipa('Moreirense','Moreira de Conegos').
 
 defineTeams(Teams):-
     findall([Name-Location], equipa(Name,Location), Teams).
+
+
     
 
-generateSeason().
+%generateSeason():-.
 
-generateLap().
+%generateLap():-.
 
-generateMatch().
+%generateMatches(LapMatches):-.
+
+%generateMatch(LapMatches):-.
+
+checkValidMatch([],_).
+checkValidMatch([M1-M2-L1|T],[Team1-Team2-Location]):-
+    M1 #= Team1,
+    M2 #= Team2,
+    checkValidMatch(T,[Team1-Team2-Location]).
 
 restrictSameLists([],[]):-!.
 restrictSameLists([H1|T1],[H2|T2]):-
     A #= B,
-    restrictSameLists(T1,T2);
+    restrictSameLists(T1,T2).
 
 printMatch(Equipa1,Equipa2,N):-
     equipa(Equipa1,Nome1),
