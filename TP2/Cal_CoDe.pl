@@ -6,18 +6,18 @@ equipa('Sporting','Lisboa').
 equipa('Boavista','Porto').
 equipa('SC Braga','Braga').
 equipa('B SAD','Lisboa').
-equipa('Gil Vicente','Guimarães').
-equipa('Famalicao','Vila Nova de Famalicão').
+equipa('Gil Vicente','Guimaraes').
+equipa('Famalicao','Vila Nova de Famalicao').
 equipa('Farense','Faro').
 equipa('Maritimo','Funchal').
-equipa('Pacos de Ferreira','Paços de Ferreira').
+equipa('Pacos de Ferreira','Pacos de Ferreira').
 equipa('Nacional','Funchal').
 equipa('Rio Ave','Vila do Conde').
 equipa('Tondela','Tondela').
-equipa('Vitória de Guimarães','Guimarães').
+equipa('Vitoria de Guimaraes','Guimaraes').
 equipa('Santa Clara','Ponta Delgada').
-equipa('Portimonense','Portimão').
-equipa('Moreirense','Moreira de Cónegos').
+equipa('Portimonense','Portimao').
+equipa('Moreirense','Moreira de Conegos').
 
 
 printMatch(Equipa1,Equipa2,N):-
@@ -28,6 +28,6 @@ printMatch(Equipa1,Equipa2,N):-
     write('Em casa : ') , write(Equipa1) , nl,
     write('Fora : ') , write(Equipa2) , nl.
 
-Cal_CoDe:-
+cal_CoDe:-
     fail.
     
