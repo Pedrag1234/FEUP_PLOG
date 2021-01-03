@@ -21,7 +21,7 @@ equipa('Moreirense','Moreira de Conegos').
 
 
 defineTeams(Teams):-
-    findall([Name-Location], equipa(Name,Location), Teams);
+    findall([Name-Location], equipa(Name,Location), Teams).
     
 
 generateSeason().
