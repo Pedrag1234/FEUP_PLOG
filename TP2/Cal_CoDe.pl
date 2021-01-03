@@ -20,6 +20,21 @@ equipa('Portimonense','Portimao').
 equipa('Moreirense','Moreira de Conegos').
 
 
+defineTeams(Teams):-
+    findall([Name-Location], equipa(Name,Location), Teams);
+    
+
+generateSeason().
+
+generateLap().
+
+generateMatch().
+
+restrictSameLists([],[]):-!.
+restrictSameLists([H1|T1],[H2|T2]):-
+    A #= B,
+    restrictSameLists(T1,T2);
+
 printMatch(Equipa1,Equipa2,N):-
     equipa(Equipa1,Nome1),
     equipa(Equipa2,Nome2),
