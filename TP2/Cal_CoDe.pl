@@ -1,5 +1,5 @@
 :- use_module(library(clpfd)).
-
+:- use_module(library(lists)).
 
 %Team: Name-City-HomeMatches-VisitorMatches
 teams(['FCPorto'-'Porto'-0-0, 'Benfica'-'Lisboa'-0-0, 'Sporting'-'Lisboa'-0-0, 'Boavista'-'Porto'-0-0, 'SCBraga'-'Braga'-0-0, 'BSAD'-'Lisboa'-0-0,
@@ -29,9 +29,30 @@ generateAlternateLap(Teams, [Match|T], NewTeams):-
         AlternateMatch = TeamVisitor-TeamHome,
         addMatch(Teams, AlternateMatch, [], TempTeams),
         generateAlternateLap(TempTeams, T, NewTeams).
-%generateMatches(LapMatches):-.
 
-%generateMatch(LapMatches):-.
+
+generateMatches([],_).
+generateMatches(Teams,Matches):-
+    generateMatch(Teams,Home,Away),
+    Home = HomeName-HomeCity-HHomeMatches-HAwayMatches,
+    Away = AwayName-AwayCity-AHomeMatches-AAwayMatches,
+    Match = HomeName-AwayName, write(Match),nl,
+    removeTeams(Teams,Home,Away,[],NewTeams),
+    generateMatches(NewTeams , [Match | Matches]).
+
+removeTeams([],_,_,NewTeams,NewTeams).
+removeTeams([TeamsH|TeamsT],Home,Away,RemAcc,NewTeams):-
+    (( TeamsH = Home ; TeamsH = Away) -> removeTeams(TeamsT,Home,Away,RemAcc,NewTeams) ; removeTeams(TeamsT,Home,Away,[TeamsH|RemAcc],NewTeams)).
+
+
+generateMatch(Teams, Home,Away):-
+    nth0(N1, Teams, Home),
+    nth0(N2, Teams, Away),
+    N1 \== N2.
+
+
+
+removeTeam(Teams,NewTeams)
 
 checkValidMatch([],_):-!.
 checkValidMatch([[M1-M2-L1]|T],[Team1-Team2-Location]):-
