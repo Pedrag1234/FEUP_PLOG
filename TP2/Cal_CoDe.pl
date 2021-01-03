@@ -34,10 +34,10 @@ defineTeams(Teams):-
 
 %generateMatch(LapMatches):-.
 
-checkValidMatch([],_).
-checkValidMatch([M1-M2-L1|T],[Team1-Team2-Location]):-
-    M1 #= Team1,
-    M2 #= Team2,
+checkValidMatch([],_):-!.
+checkValidMatch([[M1-M2-L1]|T],[Team1-Team2-Location]):-
+    M1 \== Team1,
+    M2 \== Team2,
     checkValidMatch(T,[Team1-Team2-Location]).
 
 restrictSameLists([],[]):-!.
