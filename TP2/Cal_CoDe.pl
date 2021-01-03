@@ -1,7 +1,7 @@
 :- use_module(library(clpfd)).
 
 
-%Team: Name-City-HomeGames-VisitorGames
+%Team: Name-City-HomeMatches-VisitorMatches
 teams(['FCPorto'-'Porto'-0-0, 'Benfica'-'Lisboa'-0-0, 'Sporting'-'Lisboa'-0-0, 'Boavista'-'Porto'-0-0, 'SCBraga'-'Braga'-0-0, 'BSAD'-'Lisboa'-0-0,
        'GilVicente'-'Guimaraes'-0-0, 'Famalicao'-'VilaNovaDeFamalicao'-0-0, 'Farense'-'Faro'-0-0, 'Maritimo'-'Funchal'-0-0,
        'PacosDeFerreira'-'PacosDeFerreira'-0-0, 'Nacional'-'Funchal'-0-0, 'RioAve'-'VilaDoConde'-0-0, 'Tondela'-'Tondela'-0-0,
@@ -11,23 +11,23 @@ teams(['FCPorto'-'Porto'-0-0, 'Benfica'-'Lisboa'-0-0, 'Sporting'-'Lisboa'-0-0, '
 generateLap(Teams, ['FCPorto'-'Benfica'], Teams).
 
 generateSeason(Teams):-
-    generateLap(Teams, Games, NewTeams),
-    generateAlternateLap(NewTeams, Games, NewTeams2),
+    generateLap(Teams, Matches, NewTeams),
+    generateAlternateLap(NewTeams, Matches, NewTeams2),
     print(NewTeams2).
 
-addGame([], _, TeamsAcc, TeamsAcc).
-addGame([Team|T], Game, TeamsAcc, NewTeams):-
-    Game = TeamHome-TeamVisitor,
-    Team = Name-City-HomeGames-VisitorGames,
-    ((Name = TeamHome, NewHomeGames is HomeGames + 1, NewTeam = Name-City-NewHomeGames-VisitorGames, addGame(T, Game, [NewTeam|TeamsAcc], NewTeams));
-    (Name = TeamVisitor, NewVisitorGames is VisitorGames + 1, NewTeam = Name-City-HomeGames-NewVisitorGames, addGame(T, Game, [NewTeam|TeamsAcc], NewTeams));
-    (addGame(T, Game, [Team|TeamsAcc], NewTeams))).
+addMatch([], _, TeamsAcc, TeamsAcc).
+addMatch([Team|T], Match, TeamsAcc, NewTeams):-
+    Match = TeamHome-TeamVisitor,
+    Team = Name-City-HomeMatches-VisitorMatches,
+    ((Name = TeamHome, NewHomeMatches is HomeMatches + 1, NewTeam = Name-City-NewHomeMatches-VisitorMatches, addMatch(T, Match, [NewTeam|TeamsAcc], NewTeams));
+    (Name = TeamVisitor, NewVisitorMatches is VisitorMatches + 1, NewTeam = Name-City-HomeMatches-NewVisitorMatches, addMatch(T, Match, [NewTeam|TeamsAcc], NewTeams));
+    (addMatch(T,Match, [Team|TeamsAcc], NewTeams))).
 
 generateAlternateLap(NewTeams, [], NewTeams).
-generateAlternateLap(Teams, [Game|T], NewTeams):-
-        Game = TeamHome-TeamVisitor,
-        AlternateGame = TeamVisitor-TeamHome,
-        addGame(Teams, AlternateGame, [], TempTeams),!,
+generateAlternateLap(Teams, [Match|T], NewTeams):-
+        Match = TeamHome-TeamVisitor,
+        AlternateMatch = TeamVisitor-TeamHome,
+        addMatch(Teams, AlternateMatch, [], TempTeams),
         generateAlternateLap(TempTeams, T, NewTeams).
 %generateMatches(LapMatches):-.
 
