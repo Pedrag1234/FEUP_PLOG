@@ -2,10 +2,10 @@
 :- use_module(library(lists)).
 
 %Team: Name-City-HomeMatches-AwayMatches
-teams([1-'FCPorto'-'Porto'-0-0, 2-'Benfica'-'Lisboa'-0-0, 3-'Sporting'-'Lisboa'-0-0, 4-'Boavista'-'Porto'-0-0, 5-'SCBraga'-'Braga'-0-0, 6-'BSAD'-'Lisboa'-0-0,
-       7-'GilVicente'-'Guimaraes'-0-0, 8-'Famalicao'-'VilaNovaDeFamalicao'-0-0, 9-'Farense'-'Faro'-0-0, 10-'Maritimo'-'Funchal'-0-0,
-       11-'PacosDeFerreira'-'PacosDeFerreira'-0-0, 12-'Nacional'-'Funchal'-0-0, 13-'RioAve'-'VilaDoConde'-0-0, 14-'Tondela'-'Tondela'-0-0,
-       15-'VitoriaDeGuimaraes'-'Guimaraes'-0-0, 16-'SantaClara'-'PontaDelgada'-0-0, 17-'Portimonense'-'Portimao'-0-0, 18-'Moreirense'-'MoreiraDeConegos'-0-0]).
+teams(['FCPorto'-'Porto'-0-0, 'Benfica'-'Lisboa'-0-0, 'Sporting'-'Lisboa'-0-0, 'SCBraga'-'Braga'-0-0, 'Boavista'-'Porto'-0-0, 'BSAD'-'Lisboa'-0-0,
+       'GilVicente'-'Guimaraes'-0-0, 'Famalicao'-'VilaNovaDeFamalicao'-0-0, 'Farense'-'Faro'-0-0, 'Maritimo'-'Funchal'-0-0,
+       'PacosDeFerreira'-'PacosDeFerreira'-0-0, 'Nacional'-'Funchal'-0-0, 'RioAve'-'VilaDoConde'-0-0, 'Tondela'-'Tondela'-0-0, 
+       'VitoriaDeGuimaraes'-'Guimaraes'-0-0, 'SantaClara'-'PontaDelgada'-0-0, 'Portimonense'-'Portimao'-0-0, 'Moreirense'-'MoreiraDeConegos'-0-0]).
 
 % printMatches(+Matches, +JornadaMatches, +CurrentMatch, +Jornada)
 % Writes the list of matches on the screen, grouped by each weekly set of games.
@@ -57,37 +57,33 @@ generateLap(Teams, LapJornadas, MatchesAcc, LapMatches, NewTeams):-
     append(MatchesAcc,Matches,NewMatchesAcc),
     NewLapJornadas is LapJornadas - 1,
     generateLap(TempTeams, NewLapJornadas, NewMatchesAcc, LapMatches, NewTeams).
-    %restrictSameLists(LapMatches,Matches),
-    %NewLapMatches = [LapMatches|Matches].
 
 generateAlternateLap(Teams, Matches, NewTeams):-
-    % add restrictions
     addMatches(Teams, Matches, NewTeams).
 
-countImportantMatches([], Count, Count).
-countImportantMatches([MatchesH|MatchesT], CountAcc, Count):-
-    MatchesH = HomeName-AwayName,
-    (( HomeName = 'FCPorto' ; HomeName = 'Benfica' ; HomeName = 'Sporting' ; HomeName = 'SCBraga' ) -> ( NewCountAcc is CountAcc + 1, countImportantMatches(MatchesT, NewCountAcc, Count) ); countImportantMatches(MatchesT, CountAcc, Count)).
+countImportantMatches(_, [], Count, Count).
+countImportantMatches(Teams, [HomeTeamsH|HomeTeamsT], CountAcc, Count):-
+    nth1(HomeTeamsH, Teams, Home),
+    Home = HomeName-_-_,
+    (( HomeName = 'FCPorto' ; HomeName = 'Benfica' ; HomeName = 'Sporting' ; HomeName = 'SCBraga' ) 
+    -> ( NewCountAcc is CountAcc + 1, countImportantMatches(Teams, HomeTeamsT, NewCountAcc, Count) ); countImportantMatches(Teams, HomeTeamsT, CountAcc, Count)).
 
 validateMatches(Teams, PreviousMatches, Matches):-
     length(Teams,Size),
     domain([HomeA,HomeB,HomeC,HomeD,HomeE,HomeF,HomeG,HomeH,HomeI],1,Size),
     domain([AwayA,AwayB,AwayC,AwayD,AwayE,AwayF,AwayG,AwayH,AwayI],1,Size),
     all_distinct([HomeA,HomeB,HomeC,HomeD,HomeE,HomeF,HomeG,HomeH,HomeI,AwayA,AwayB,AwayC,AwayD,AwayE,AwayF,AwayG,AwayH,AwayI]),
+    %countImportantMatches(Teams, [HomeA,HomeB,HomeC,HomeD,HomeE,HomeF,HomeG,HomeH,HomeI], 0, Count),
+    %Count #> 1,
     checkPreviousMatches(Teams, PreviousMatches, [HomeA,HomeB,HomeC,HomeD,HomeE,HomeF,HomeG,HomeH,HomeI], [AwayA,AwayB,AwayC,AwayD,AwayE,AwayF,AwayG,AwayH,AwayI]),
     generateMatches(Teams,[HomeA,HomeB,HomeC,HomeD,HomeE,HomeF,HomeG,HomeH,HomeI],[AwayA,AwayB,AwayC,AwayD,AwayE,AwayF,AwayG,AwayH,AwayI],[],Matches).
-    %append(PreviousMatches, Matches, AllMatches),
-    %all_different(AllMatches).
-    %countImportantMatches(Matches, 0, Count),
-    %write(Count), nl,
-    %Count #> 1.
 
 checkPreviousMatches(_, _, [], []).
 checkPreviousMatches(Teams, PreviousMatches, [HomeTeamsH|HomeTeamsT], [AwayTeamsH|AwayTeamsT]):-
     nth1(HomeTeamsH, Teams, Home),
     nth1(AwayTeamsH, Teams, Away),
-    Home = HomeID-HomeName-HomeCity-HHomeMatches-HAwayMatches,
-    Away = AwayID-AwayName-AwayCity-AHomeMatches-AAwayMatches,
+    Home = HomeName-_-HHomeMatches-HAwayMatches,
+    Away = AwayName-_-AHomeMatches-AAwayMatches,
     HHomeMatches =< HAwayMatches,
     AAwayMatches =< AHomeMatches,
     checkPreviousOpponents(PreviousMatches, HomeName, AwayName),
@@ -102,8 +98,8 @@ generateMatches(_,[],[],Matches,Matches).
 generateMatches(Teams,[HomeTeamsH|HomeTeamsT],[AwayTeamsH|AwayTeamsT],MatchesAcc,Matches):-
     nth1(HomeTeamsH, Teams, Home),
     nth1(AwayTeamsH, Teams, Away),
-    Home = HomeID-HomeName-HomeCity-HHomeMatches-HAwayMatches,
-    Away = AwayID-AwayName-AwayCity-AHomeMatches-AAwayMatches,
+    Home = HomeName-_-_-_,
+    Away = AwayName-_-_-_,
     Match = HomeName-AwayName,
     append(MatchesAcc,[Match],NewMatchesAcc),
     generateMatches(Teams,HomeTeamsT,AwayTeamsT,NewMatchesAcc,Matches).
@@ -129,19 +125,7 @@ addMatches(Teams, [Match|MatchT], NewTeams):-
 addMatch([], _, TeamsAcc, TeamsAcc).
 addMatch([Team|T], Match, TeamsAcc, NewTeams):-
     Match = HomeTeam-AwayTeam,
-    Team = ID-Name-City-HomeMatches-AwayMatches,
-    ((Name = HomeTeam, NewHomeMatches is HomeMatches + 1, NewTeam = ID-Name-City-NewHomeMatches-AwayMatches, append(TeamsAcc, [NewTeam], NewTeamsAcc), addMatch(T, Match, NewTeamsAcc, NewTeams));
-    (Name = AwayTeam, NewAwayMatches is AwayMatches + 1, NewTeam = ID-Name-City-HomeMatches-NewAwayMatches, append(TeamsAcc, [NewTeam], NewTeamsAcc), addMatch(T, Match, NewTeamsAcc, NewTeams));
+    Team = Name-City-HomeMatches-AwayMatches,
+    ((Name = HomeTeam, NewHomeMatches is HomeMatches + 1, NewTeam = Name-City-NewHomeMatches-AwayMatches, append(TeamsAcc, [NewTeam], NewTeamsAcc), addMatch(T, Match, NewTeamsAcc, NewTeams));
+    (Name = AwayTeam, NewAwayMatches is AwayMatches + 1, NewTeam = Name-City-HomeMatches-NewAwayMatches, append(TeamsAcc, [NewTeam], NewTeamsAcc), addMatch(T, Match, NewTeamsAcc, NewTeams));
     (append(TeamsAcc, [Team], NewTeamsAcc), addMatch(T,Match, NewTeamsAcc, NewTeams))).
-
-checkValidMatch([],_):-!.
-checkValidMatch([[M1-M2-L1]|T],[Team1-Team2-Location]):-
-    M1 \== Team1,
-    M2 \== Team2,
-    checkValidMatch(T,[Team1-Team2-Location]).
-
-restrictSameLists([],[]):-!.
-restrictSameLists([H1|T1],[H2|T2]):-
-    A #= B,
-    restrictSameLists(T1,T2).
-    
