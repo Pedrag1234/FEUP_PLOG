@@ -30,29 +30,29 @@ run(Teams, Laps):-
     length(Teams, Length),
     JornadaMatches is round(Length / 2),
     printMatches(SeasonMatches, JornadaMatches, 0, 0),
-    print(NewTeams),nl.
+    nl, print(NewTeams), nl.
 
-% generateSeason(+Teams, +Laps, +LapGeneration, +LastLapMatches, +MatchesAcc, -SeasonMatches)
+% generateSeason(+Teams, +Laps, +LapGeneration, +LastLapMatches, +MatchesAcc, -SeasonMatches, -NewTeams)
 % Generates all the matches in a season, according to the teams + lap numbers provided.
-generateSeason(NewTeams, 0, _, _, SeasonMatches, SeasonMatches,NewTeams).
-generateSeason(Teams, Laps, first, LastLapMatches, MatchesAcc, SeasonMatches,NewTeams):-
+generateSeason(NewTeams, 0, _, _, SeasonMatches, SeasonMatches, NewTeams).
+generateSeason(Teams, Laps, first, LastLapMatches, MatchesAcc, SeasonMatches, NewTeams):-
     length(Teams,Size),
     LapJornadas is Size - 1,
     generateLap(Teams, LapJornadas, [], LastLapMatches, TempTeams),
     NewLaps is Laps - 1,
     append(MatchesAcc, LastLapMatches, NewMatchesAcc),
-    generateSeason(TempTeams, NewLaps, alternate, LastLapMatches, NewMatchesAcc, SeasonMatches,NewTeams).
+    generateSeason(TempTeams, NewLaps, alternate, LastLapMatches, NewMatchesAcc, SeasonMatches, NewTeams).
 
-generateSeason(Teams, Laps, alternate, LastLapMatches, MatchesAcc, SeasonMatches,NewTeams):-
+generateSeason(Teams, Laps, alternate, LastLapMatches, MatchesAcc, SeasonMatches, NewTeams):-
     alternateMatchSides(LastLapMatches, [], AlternatedMatches),
     generateAlternateLap(Teams, AlternatedMatches, TempTeams),
     NewLaps is Laps - 1,
     append(MatchesAcc, AlternatedMatches, NewMatchesAcc),
-    generateSeason(TempTeams, NewLaps, alternate, AlternatedMatches, NewMatchesAcc, SeasonMatches,NewTeams).
+    generateSeason(TempTeams, NewLaps, alternate, AlternatedMatches, NewMatchesAcc, SeasonMatches, NewTeams).
 
 generateLap(Teams, 0,  LapMatches, LapMatches, Teams).
 generateLap(Teams, LapJornadas, MatchesAcc, LapMatches, NewTeams):-
-    validateMatches(Teams,Matches),
+    validateMatches(Teams, MatchesAcc, Matches),
     addMatches(Teams,Matches,TempTeams),
     append(MatchesAcc,Matches,NewMatchesAcc),
     NewLapJornadas is LapJornadas - 1,
@@ -69,15 +69,34 @@ countImportantMatches([MatchesH|MatchesT], CountAcc, Count):-
     MatchesH = HomeName-AwayName,
     (( HomeName = 'FCPorto' ; HomeName = 'Benfica' ; HomeName = 'Sporting' ; HomeName = 'SCBraga' ) -> ( NewCountAcc is CountAcc + 1, countImportantMatches(MatchesT, NewCountAcc, Count) ); countImportantMatches(MatchesT, CountAcc, Count)).
 
-validateMatches(Teams,Matches):-
+validateMatches(Teams, PreviousMatches, Matches):-
     length(Teams,Size),
     domain([HomeA,HomeB,HomeC,HomeD,HomeE,HomeF,HomeG,HomeH,HomeI],1,Size),
     domain([AwayA,AwayB,AwayC,AwayD,AwayE,AwayF,AwayG,AwayH,AwayI],1,Size),
     all_distinct([HomeA,HomeB,HomeC,HomeD,HomeE,HomeF,HomeG,HomeH,HomeI,AwayA,AwayB,AwayC,AwayD,AwayE,AwayF,AwayG,AwayH,AwayI]),
-    generateMatches(Teams,[HomeA,HomeB,HomeC,HomeD,HomeE,HomeF,HomeG,HomeH,HomeI],[AwayA,AwayB,AwayC,AwayD,AwayE,AwayF,AwayG,AwayH,AwayI],[],Matches),
-    countImportantMatches(Matches, 0, Count),
-    write(Count), nl,
-    Count #> 1.
+    checkPreviousMatches(Teams, PreviousMatches, [HomeA,HomeB,HomeC,HomeD,HomeE,HomeF,HomeG,HomeH,HomeI], [AwayA,AwayB,AwayC,AwayD,AwayE,AwayF,AwayG,AwayH,AwayI]),
+    generateMatches(Teams,[HomeA,HomeB,HomeC,HomeD,HomeE,HomeF,HomeG,HomeH,HomeI],[AwayA,AwayB,AwayC,AwayD,AwayE,AwayF,AwayG,AwayH,AwayI],[],Matches).
+    %append(PreviousMatches, Matches, AllMatches),
+    %all_different(AllMatches).
+    %countImportantMatches(Matches, 0, Count),
+    %write(Count), nl,
+    %Count #> 1.
+
+checkPreviousMatches(_, _, [], []).
+checkPreviousMatches(Teams, PreviousMatches, [HomeTeamsH|HomeTeamsT], [AwayTeamsH|AwayTeamsT]):-
+    nth1(HomeTeamsH, Teams, Home),
+    nth1(AwayTeamsH, Teams, Away),
+    Home = HomeID-HomeName-HomeCity-HHomeMatches-HAwayMatches,
+    Away = AwayID-AwayName-AwayCity-AHomeMatches-AAwayMatches,
+    HHomeMatches =< HAwayMatches,
+    AAwayMatches =< AHomeMatches,
+    checkPreviousOpponents(PreviousMatches, HomeName, AwayName),
+    checkPreviousMatches(Teams, PreviousMatches, HomeTeamsT, AwayTeamsT).
+
+checkPreviousOpponents([], _, _).
+checkPreviousOpponents([Match|PreviousMatchesT], HomeName, AwayName):-
+    Match \== HomeName-AwayName, Match \== AwayName-HomeName,
+    checkPreviousOpponents(PreviousMatchesT, HomeName, AwayName).
 
 generateMatches(_,[],[],Matches,Matches).
 generateMatches(Teams,[HomeTeamsH|HomeTeamsT],[AwayTeamsH|AwayTeamsT],MatchesAcc,Matches):-
@@ -88,13 +107,6 @@ generateMatches(Teams,[HomeTeamsH|HomeTeamsT],[AwayTeamsH|AwayTeamsT],MatchesAcc
     Match = HomeName-AwayName,
     append(MatchesAcc,[Match],NewMatchesAcc),
     generateMatches(Teams,HomeTeamsT,AwayTeamsT,NewMatchesAcc,Matches).
-
-% generateMatch(+Teams, -Home, -Away)
-% Creates a match between two different teams.
-generateMatch(Teams, Home, Away):-
-    nth0(N1, Teams, Home),
-    nth0(N2, Teams, Away),
-    N1 \== N2.
 
 % alternateMatchSides(+Matches, +MatchesAcc, -AlternatedMatches)
 % With a given list of matches, returns another list with the same matches but with the team sides reversed.
@@ -118,15 +130,9 @@ addMatch([], _, TeamsAcc, TeamsAcc).
 addMatch([Team|T], Match, TeamsAcc, NewTeams):-
     Match = HomeTeam-AwayTeam,
     Team = ID-Name-City-HomeMatches-AwayMatches,
-    ((Name = HomeTeam, NewHomeMatches is HomeMatches + 1, NewTeam = ID-Name-City-NewHomeMatches-AwayMatches, addMatch(T, Match, [NewTeam|TeamsAcc], NewTeams));
-    (Name = AwayTeam, NewAwayMatches is AwayMatches + 1, NewTeam = ID-Name-City-HomeMatches-NewAwayMatches, addMatch(T, Match, [NewTeam|TeamsAcc], NewTeams));
-    (addMatch(T,Match, [Team|TeamsAcc], NewTeams))).
-
-% removeTeams(+Teams, +Match, +TeamsAcc, -NewTeams)
-% Searches for the teams that participated in a given match, and saves the given match on their record.
-removeTeams([],_,_,NewTeams,NewTeams).
-removeTeams([TeamsH|TeamsT],Home,Away,RemAcc,NewTeams):-
-    (( TeamsH = Home ; TeamsH = Away) -> removeTeams(TeamsT,Home,Away,RemAcc,NewTeams) ; removeTeams(TeamsT,Home,Away,[TeamsH|RemAcc],NewTeams)).
+    ((Name = HomeTeam, NewHomeMatches is HomeMatches + 1, NewTeam = ID-Name-City-NewHomeMatches-AwayMatches, append(TeamsAcc, [NewTeam], NewTeamsAcc), addMatch(T, Match, NewTeamsAcc, NewTeams));
+    (Name = AwayTeam, NewAwayMatches is AwayMatches + 1, NewTeam = ID-Name-City-HomeMatches-NewAwayMatches, append(TeamsAcc, [NewTeam], NewTeamsAcc), addMatch(T, Match, NewTeamsAcc, NewTeams));
+    (append(TeamsAcc, [Team], NewTeamsAcc), addMatch(T,Match, NewTeamsAcc, NewTeams))).
 
 checkValidMatch([],_):-!.
 checkValidMatch([[M1-M2-L1]|T],[Team1-Team2-Location]):-
