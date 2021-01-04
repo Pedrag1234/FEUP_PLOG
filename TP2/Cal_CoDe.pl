@@ -26,35 +26,37 @@ printMatches([Match|MatchT], JornadaMatches, CurrentMatch, Jornada):-
 % run(+Teams, +Laps)
 % Starts the program, generating a football season calendar.
 run(Teams, Laps):-
-    generateSeason(Teams, Laps, first, _, [], SeasonMatches),
+    generateSeason(Teams, Laps, first, _, [], SeasonMatches,NewTeams),
     length(Teams, Length),
-    JornadaMatches is round(Length / 2), 
-    printMatches(SeasonMatches, JornadaMatches, 0, 0).
+    JornadaMatches is round(Length / 2),
+    printMatches(SeasonMatches, JornadaMatches, 0, 0),
+    print(NewTeams),nl.
 
 % generateSeason(+Teams, +Laps, +LapGeneration, +LastLapMatches, +MatchesAcc, -SeasonMatches)
 % Generates all the matches in a season, according to the teams + lap numbers provided.
-generateSeason(_, 0, _, _, SeasonMatches, SeasonMatches).
-generateSeason(Teams, Laps, first, LastLapMatches, MatchesAcc, SeasonMatches):-
+generateSeason(NewTeams, 0, _, _, SeasonMatches, SeasonMatches,NewTeams).
+generateSeason(Teams, Laps, first, LastLapMatches, MatchesAcc, SeasonMatches,NewTeams):-
     length(Teams,Size),
     LapJornadas is Size - 1,
-    generateLap(Teams, LapJornadas, [], LastLapMatches, NewTeams),
+    generateLap(Teams, LapJornadas, [], LastLapMatches, TempTeams),
     NewLaps is Laps - 1,
     append(MatchesAcc, LastLapMatches, NewMatchesAcc),
-    generateSeason(NewTeams, NewLaps, alternate, LastLapMatches, NewMatchesAcc, SeasonMatches).
+    generateSeason(TempTeams, NewLaps, alternate, LastLapMatches, NewMatchesAcc, SeasonMatches,NewTeams).
 
-generateSeason(Teams, Laps, alternate, LastLapMatches, MatchesAcc, SeasonMatches):-
+generateSeason(Teams, Laps, alternate, LastLapMatches, MatchesAcc, SeasonMatches,NewTeams):-
     alternateMatchSides(LastLapMatches, [], AlternatedMatches),
-    generateAlternateLap(Teams, AlternatedMatches, NewTeams),
+    generateAlternateLap(Teams, AlternatedMatches, TempTeams),
     NewLaps is Laps - 1,
     append(MatchesAcc, AlternatedMatches, NewMatchesAcc),
-    generateSeason(NewTeams, NewLaps, alternate, AlternatedMatches, NewMatchesAcc, SeasonMatches).
+    generateSeason(TempTeams, NewLaps, alternate, AlternatedMatches, NewMatchesAcc, SeasonMatches,NewTeams).
 
-generateLap(_, 0,  LapMatches, LapMatches, _).
-generateLap(Teams, LapJornadas, MatchesAcc, LapMatches, Teams):-
+generateLap(Teams, 0,  LapMatches, LapMatches, Teams).
+generateLap(Teams, LapJornadas, MatchesAcc, LapMatches, NewTeams):-
     validateMatches(Teams,Matches),
+    addMatches(Teams,Matches,TempTeams),
     append(MatchesAcc,Matches,NewMatchesAcc),
     NewLapJornadas is LapJornadas - 1,
-    generateLap(Teams, NewLapJornadas, NewMatchesAcc, LapMatches, Teams).
+    generateLap(TempTeams, NewLapJornadas, NewMatchesAcc, LapMatches, NewTeams).
     %restrictSameLists(LapMatches,Matches),
     %NewLapMatches = [LapMatches|Matches].
 
