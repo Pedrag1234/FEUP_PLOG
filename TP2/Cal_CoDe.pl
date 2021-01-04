@@ -47,10 +47,11 @@ generateSeason(Teams, Laps, alternate, LastLapMatches, MatchesAcc, SeasonMatches
     append(MatchesAcc, AlternatedMatches, NewMatchesAcc),
     generateSeason(NewTeams, NewLaps, alternate, AlternatedMatches, NewMatchesAcc, SeasonMatches).
 
-generateLap(Teams, LapMatches,NewLapMatches):-
-    generateMatches(Teams,Matches),
-    restrictSameLists(LapMatches,Matches),
-    NewLapMatches = [LapMatches|Matches].
+generateLap(Teams, LapMatches,Teams):-
+    validateMatches(Teams,LapMatches),
+    write('Yeet'),nl.
+    %restrictSameLists(LapMatches,Matches),
+    %NewLapMatches = [LapMatches|Matches].
 
 generateAlternateLap(Teams, Matches, NewTeams):-
     % add restrictions
@@ -63,21 +64,27 @@ countImportantMatches([MatchesH|MatchesT],Count):-
 
 
 validateMatches(Teams,Matches):-
-    Count is 0,
-    countImportantMatches(Matches,Count),
-    Count #> 2,
+    length(Teams,Size),
+    domain([HomeA,HomeB,HomeC,HomeD,HomeE,HomeF,HomeG,HomeH,HomeI],1,Size),
+    domain([AwayA,AwayB,AwayC,AwayD,AwayE,AwayF,AwayG,AwayH,AwayI],1,Size),
+    all_distinct([HomeA,HomeB,HomeC,HomeD,HomeE,HomeF,HomeG,HomeH,HomeI,AwayA,AwayB,AwayC,AwayD,AwayE,AwayF,AwayG,AwayH,AwayI]),
+    generateMatches(Teams,[HomeA,HomeB,HomeC,HomeD,HomeE,HomeF,HomeG,HomeH,HomeI],[AwayA,AwayB,AwayC,AwayD,AwayE,AwayF,AwayG,AwayH,AwayI],[],Matches).
 
 
 
-generateMatches([],_).
-generateMatches(Teams,[MatchesH|MatchesT]):-
-    generateMatch(Teams,Home,Away),
+generateMatches(_,[],[],Matches,Matches).
+generateMatches(Teams,[HomeTeamsH|HomeTeamsT],[AwayTeamsH|AwayTeamsT],MatchesAcc,Matches):-
+    nth1(HomeTeamsH, Teams, Home),
+    nth1(AwayTeamsH, Teams, Away),
     Home = HomeID-HomeName-HomeCity-HHomeMatches-HAwayMatches,
     Away = AwayID-AwayName-AwayCity-AHomeMatches-AAwayMatches,
     Match = HomeName-AwayName,
-    removeTeams(Teams,Home,Away,[],NewTeams),
-    MatchesH = Match,
-    generateMatches(NewTeams , MatchesT).
+    append(MatchesAcc,[Match],NewMatchesAcc),
+    generateMatches(Teams,HomeTeamsT,AwayTeamsT,NewMatchesAcc,Matches).
+
+
+
+    
 
 % generateMatch(+Teams, -Home, -Away)
 % Creates a match between two different teams.
