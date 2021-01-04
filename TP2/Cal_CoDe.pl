@@ -102,6 +102,8 @@ addMatch([Team|T], Match, TeamsAcc, NewTeams):-
     (Name = AwayTeam, NewAwayMatches is AwayMatches + 1, NewTeam = Name-City-HomeMatches-NewAwayMatches, addMatch(T, Match, [NewTeam|TeamsAcc], NewTeams));
     (addMatch(T,Match, [Team|TeamsAcc], NewTeams))).
 
+% removeTeams(+Teams, +Match, +TeamsAcc, -NewTeams)
+% Searches for the teams that participated in a given match, and saves the given match on their record.
 removeTeams([],_,_,NewTeams,NewTeams).
 removeTeams([TeamsH|TeamsT],Home,Away,RemAcc,NewTeams):-
     (( TeamsH = Home ; TeamsH = Away) -> removeTeams(TeamsT,Home,Away,RemAcc,NewTeams) ; removeTeams(TeamsT,Home,Away,[TeamsH|RemAcc],NewTeams)).
