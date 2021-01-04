@@ -2,10 +2,10 @@
 :- use_module(library(lists)).
 
 %Team: Name-City-HomeMatches-AwayMatches
-teams(['FCPorto'-'Porto'-0-0, 'Benfica'-'Lisboa'-0-0, 'Sporting'-'Lisboa'-0-0, 'Boavista'-'Porto'-0-0, 'SCBraga'-'Braga'-0-0, 'BSAD'-'Lisboa'-0-0,
-       'GilVicente'-'Guimaraes'-0-0, 'Famalicao'-'VilaNovaDeFamalicao'-0-0, 'Farense'-'Faro'-0-0, 'Maritimo'-'Funchal'-0-0,
-       'PacosDeFerreira'-'PacosDeFerreira'-0-0, 'Nacional'-'Funchal'-0-0, 'RioAve'-'VilaDoConde'-0-0, 'Tondela'-'Tondela'-0-0,
-       'VitoriaDeGuimaraes'-'Guimaraes'-0-0, 'SantaClara'-'PontaDelgada'-0-0, 'Portimonense'-'Portimao'-0-0, 'Moreirense'-'MoreiraDeConegos'-0-0]).
+teams([1-'FCPorto'-'Porto'-0-0, 2-'Benfica'-'Lisboa'-0-0, 3-'Sporting'-'Lisboa'-0-0, 4-'Boavista'-'Porto'-0-0, 5-'SCBraga'-'Braga'-0-0, 6-'BSAD'-'Lisboa'-0-0,
+       7-'GilVicente'-'Guimaraes'-0-0, 8-'Famalicao'-'VilaNovaDeFamalicao'-0-0, 9-'Farense'-'Faro'-0-0, 10-'Maritimo'-'Funchal'-0-0,
+       11-'PacosDeFerreira'-'PacosDeFerreira'-0-0, 12-'Nacional'-'Funchal'-0-0, 13-'RioAve'-'VilaDoConde'-0-0, 14-'Tondela'-'Tondela'-0-0,
+       15-'VitoriaDeGuimaraes'-'Guimaraes'-0-0, 16-'SantaClara'-'PontaDelgada'-0-0, 17-'Portimonense'-'Portimao'-0-0, 18-'Moreirense'-'MoreiraDeConegos'-0-0]).
 
 % printMatches(+Matches, +JornadaMatches, +CurrentMatch, +Jornada)
 % Writes the list of matches on the screen, grouped by each weekly set of games.
@@ -50,20 +50,30 @@ generateSeason(Teams, Laps, alternate, LastLapMatches, MatchesAcc, SeasonMatches
 generateLap(Teams, LapMatches,NewLapMatches):-
     generateMatches(Teams,Matches),
     restrictSameLists(LapMatches,Matches),
-    %generateAlternateLap(Teams,Matches,ReverseMatches),
     NewLapMatches = [LapMatches|Matches].
-    %NewLapMatches = [ReverseMatches|NewLapMatches],  
-    %write(NewLapMatches),nl.
 
 generateAlternateLap(Teams, Matches, NewTeams):-
     % add restrictions
     addMatches(Teams, Matches, NewTeams).
 
+countImportantMatches([],_).
+countImportantMatches([MatchesH|MatchesT],Count):-
+    MatchesH = HomeName-AwayName,
+    (( HomeName = 'FCPorto' ; HomeName = 'Benfica' ; HomeName = 'Sporting' ; HomeName = 'SCBraga' ) -> ( NewCount is Count + 1 ; countImportantMatches(MatchesT,NewCount) ); countImportantMatches(MatchesT,Count)).
+
+
+validateMatches(Teams,Matches):-
+    Count is 0,
+    countImportantMatches(Matches,Count),
+    Count #> 2,
+
+
+
 generateMatches([],_).
 generateMatches(Teams,[MatchesH|MatchesT]):-
     generateMatch(Teams,Home,Away),
-    Home = HomeName-HomeCity-HHomeMatches-HAwayMatches,
-    Away = AwayName-AwayCity-AHomeMatches-AAwayMatches,
+    Home = HomeID-HomeName-HomeCity-HHomeMatches-HAwayMatches,
+    Away = AwayID-AwayName-AwayCity-AHomeMatches-AAwayMatches,
     Match = HomeName-AwayName,
     removeTeams(Teams,Home,Away,[],NewTeams),
     MatchesH = Match,
@@ -97,9 +107,9 @@ addMatches(Teams, [Match|MatchT], NewTeams):-
 addMatch([], _, TeamsAcc, TeamsAcc).
 addMatch([Team|T], Match, TeamsAcc, NewTeams):-
     Match = HomeTeam-AwayTeam,
-    Team = Name-City-HomeMatches-AwayMatches,
-    ((Name = HomeTeam, NewHomeMatches is HomeMatches + 1, NewTeam = Name-City-NewHomeMatches-AwayMatches, addMatch(T, Match, [NewTeam|TeamsAcc], NewTeams));
-    (Name = AwayTeam, NewAwayMatches is AwayMatches + 1, NewTeam = Name-City-HomeMatches-NewAwayMatches, addMatch(T, Match, [NewTeam|TeamsAcc], NewTeams));
+    Team = ID-Name-City-HomeMatches-AwayMatches,
+    ((Name = HomeTeam, NewHomeMatches is HomeMatches + 1, NewTeam = ID-Name-City-NewHomeMatches-AwayMatches, addMatch(T, Match, [NewTeam|TeamsAcc], NewTeams));
+    (Name = AwayTeam, NewAwayMatches is AwayMatches + 1, NewTeam = ID-Name-City-HomeMatches-NewAwayMatches, addMatch(T, Match, [NewTeam|TeamsAcc], NewTeams));
     (addMatch(T,Match, [Team|TeamsAcc], NewTeams))).
 
 % removeTeams(+Teams, +Match, +TeamsAcc, -NewTeams)
