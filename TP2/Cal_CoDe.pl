@@ -32,13 +32,14 @@ generateAlternateLap(Teams, [Match|T], NewTeams):-
 
 
 generateMatches([],_).
-generateMatches(Teams,Matches):-
+generateMatches(Teams,[MatchesH|MatchesT]):-
     generateMatch(Teams,Home,Away),
     Home = HomeName-HomeCity-HHomeMatches-HAwayMatches,
     Away = AwayName-AwayCity-AHomeMatches-AAwayMatches,
     Match = HomeName-AwayName, write(Match),nl,
     removeTeams(Teams,Home,Away,[],NewTeams),
-    generateMatches(NewTeams , [Match | Matches]).
+    MatchesH = Match,
+    generateMatches(NewTeams , MatchesT).
 
 removeTeams([],_,_,NewTeams,NewTeams).
 removeTeams([TeamsH|TeamsT],Home,Away,RemAcc,NewTeams):-
@@ -52,7 +53,7 @@ generateMatch(Teams, Home,Away):-
 
 
 
-removeTeam(Teams,NewTeams)
+
 
 checkValidMatch([],_):-!.
 checkValidMatch([[M1-M2-L1]|T],[Team1-Team2-Location]):-
