@@ -26,11 +26,10 @@ printMatches([Match|MatchT], JornadaMatches, CurrentMatch, Jornada):-
 % run(+Teams, +Laps)
 % Starts the program, generating a football season calendar.
 run(Teams, Laps):-
-    generateSeason(Teams, Laps, first, _, [], SeasonMatches,NewTeams),
+    generateSeason(Teams, Laps, first, _, [], SeasonMatches, _),
     length(Teams, Length),
     JornadaMatches is round(Length / 2),
-    printMatches(SeasonMatches, JornadaMatches, 0, 0),
-    nl, print(NewTeams), nl.
+    printMatches(SeasonMatches, JornadaMatches, 0, 0).
 
 % generateSeason(+Teams, +Laps, +LapGeneration, +LastLapMatches, +MatchesAcc, -SeasonMatches, -NewTeams)
 % Generates all the matches in a season, according to the teams + lap numbers provided.
@@ -65,15 +64,6 @@ generateAlternateLap(Teams, LastLapMatches, AlternatedMatches, NewTeams):-
     alternateMatchSides(LastLapMatches, [], AlternatedMatches),
     addMatches(Teams, AlternatedMatches, NewTeams).
 
-% countImportantMatches(+Teams, +HomeTeams, +CountAcc, -Count)
-% Counts the amount of matches that occur on the home of a 'big' team
-countImportantMatches(_, [], Count, Count).
-countImportantMatches(Teams, [HomeTeamsH|HomeTeamsT], CountAcc, Count):-
-    nth1(HomeTeamsH, Teams, Home),
-    Home = HomeName-_-_,
-    (( HomeName = 'FCPorto' ; HomeName = 'Benfica' ; HomeName = 'Sporting' ; HomeName = 'SCBraga' ) 
-    -> ( NewCountAcc is CountAcc + 1, countImportantMatches(Teams, HomeTeamsT, NewCountAcc, Count) ); countImportantMatches(Teams, HomeTeamsT, CountAcc, Count)).
-
 % validateMatches(+Teams, +PreviousMatches, -Matches)
 % Returns a possible weekly set of matches, respecting the restrictions put in place.
 validateMatches(Teams, PreviousMatches, Matches):-
@@ -82,10 +72,33 @@ validateMatches(Teams, PreviousMatches, Matches):-
     domain([AwayA,AwayB,AwayC,AwayD,AwayE,AwayF,AwayG,AwayH,AwayI],1,Size),
     all_distinct([HomeA,HomeB,HomeC,HomeD,HomeE,HomeF,HomeG,HomeH,HomeI,AwayA,AwayB,AwayC,AwayD,AwayE,AwayF,AwayG,AwayH,AwayI]),
     %countImportantMatches(Teams, [HomeA,HomeB,HomeC,HomeD,HomeE,HomeF,HomeG,HomeH,HomeI], 0, Count),
-    %Count #> 1,
+    %Count #= 2,
     checkPreviousMatches(Teams, PreviousMatches, [HomeA,HomeB,HomeC,HomeD,HomeE,HomeF,HomeG,HomeH,HomeI], [AwayA,AwayB,AwayC,AwayD,AwayE,AwayF,AwayG,AwayH,AwayI]),
     generateMatches(Teams,[HomeA,HomeB,HomeC,HomeD,HomeE,HomeF,HomeG,HomeH,HomeI],[AwayA,AwayB,AwayC,AwayD,AwayE,AwayF,AwayG,AwayH,AwayI],[],Matches).
+    %checkDoubleHomeMatches(Teams, [HomeA,HomeB,HomeC,HomeD,HomeE,HomeF,HomeG,HomeH,HomeI], []).
 
+% countImportantMatches(+Teams, +HomeTeams, +CountAcc, -Count)
+% Counts the amount of matches that occur on the home of a 'big' team
+%countImportantMatches(_, [], Count, Count).
+%countImportantMatches(Teams, [HomeTeamsH|HomeTeamsT], CountAcc, Count):-
+%    nth1(HomeTeamsH, Teams, Home),
+%    Home = HomeName-_-_,
+%    (( HomeName = 'FCPorto' ; HomeName = 'Benfica' ; HomeName = 'Sporting' ; HomeName = 'SCBraga' ) 
+%    -> ( NewCountAcc is CountAcc + 1, countImportantMatches(Teams, HomeTeamsT, NewCountAcc, Count) ); countImportantMatches(Teams, HomeTeamsT, CountAcc, Count)).
+
+% checkDoubleHomeMatches(+Teams, +HomeTeams, ?Cities)
+% Checks to see if there is more than one game being played on the same city, on a given weekly set of teams playing at home.
+%checkDoubleHomeMatches(_, [], Cities):-
+%    length(Cities, FirstLength),
+%    remove_dups(Cities, Pruned),
+%    length(Pruned, SecondLength),
+%    FirstLength = SecondLength.
+    
+%checkDoubleHomeMatches(Teams, [HomeTeamsH|HomeTeamsT], Cities):-
+%    nth1(HomeTeamsH, Teams, Home),
+%    Home = _-City-_-_,
+%    checkDoubleHomeMatches(Teams, HomeTeamsT, [City|Cities]).
+    
 % checkPreviousMatches(+Teams, +PreviousMatches, +HomeTeams, +AwayTeams)
 % Checks to see if the chosen set of teams respects the restrictions put in place (alternating sides every weekly set of games + not playing a match that has been already played before).
 checkPreviousMatches(_, _, [], []).
