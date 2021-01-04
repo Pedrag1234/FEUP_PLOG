@@ -8,7 +8,13 @@ teams(['FCPorto'-'Porto'-0-0, 'Benfica'-'Lisboa'-0-0, 'Sporting'-'Lisboa'-0-0, '
        'VitoriaDeGuimaraes'-'Guimaraes'-0-0, 'SantaClara'-'PontaDelgada'-0-0, 'Portimonense'-'Portimao'-0-0, 'Moreirense'-'MoreiraDeConegos'-0-0]).
 
 
-generateLap(Teams, ['FCPorto'-'Benfica'], Teams).
+generateLap(Teams, LapMatches,NewLapMatches):-
+    generateMatches(Teams,Matches),
+    restrictSameLists(LapMatches,Matches),
+    %generateAlternateLap(Teams,Matches,ReverseMatches),
+    NewLapMatches = [LapMatches|Matches],
+    %NewLapMatches = [ReverseMatches|NewLapMatches],  
+    write(NewLapMatches),nl.
 
 generateSeason(Teams):-
     generateLap(Teams, Matches, NewTeams),
@@ -36,7 +42,7 @@ generateMatches(Teams,[MatchesH|MatchesT]):-
     generateMatch(Teams,Home,Away),
     Home = HomeName-HomeCity-HHomeMatches-HAwayMatches,
     Away = AwayName-AwayCity-AHomeMatches-AAwayMatches,
-    Match = HomeName-AwayName, write(Match),nl,
+    Match = HomeName-AwayName,
     removeTeams(Teams,Home,Away,[],NewTeams),
     MatchesH = Match,
     generateMatches(NewTeams , MatchesT).
@@ -50,9 +56,6 @@ generateMatch(Teams, Home,Away):-
     nth0(N1, Teams, Home),
     nth0(N2, Teams, Away),
     N1 \== N2.
-
-
-
 
 
 checkValidMatch([],_):-!.
