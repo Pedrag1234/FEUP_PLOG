@@ -7,9 +7,25 @@ teams(['FCPorto'-'Porto'-0-0, 'Benfica'-'Lisboa'-0-0, 'Sporting'-'Lisboa'-0-0, '
        'PacosDeFerreira'-'PacosDeFerreira'-0-0, 'Nacional'-'Funchal'-0-0, 'RioAve'-'VilaDoConde'-0-0, 'Tondela'-'Tondela'-0-0,
        'VitoriaDeGuimaraes'-'Guimaraes'-0-0, 'SantaClara'-'PontaDelgada'-0-0, 'Portimonense'-'Portimao'-0-0, 'Moreirense'-'MoreiraDeConegos'-0-0]).
 
+printMatches([], _, _, _).
+printMatches(Matches, JornadaMatches, JornadaMatches, Jornada):-
+    NewJornada is Jornada + 1,
+    nl,
+    printMatches(Matches, JornadaMatches, 0, NewJornada).
+printMatches([Match|MatchT], JornadaMatches, 0, Jornada):-
+    JornadaWrite is Jornada + 1,
+    write('Jornada '), write(JornadaWrite), write(': | '), write(Match), write(' | '),
+    printMatches(MatchT, JornadaMatches, 1, Jornada).
+printMatches([Match|MatchT], JornadaMatches, CurrentMatch, Jornada):-
+    write(Match), write(' | '),
+    NewCurrentMatch is CurrentMatch + 1,
+    printMatches(MatchT, JornadaMatches, NewCurrentMatch, Jornada).
+
 run(Teams, Laps):-
     generateSeason(Teams, Laps, first, _, [], SeasonMatches),
-    print(SeasonMatches).
+    length(Teams, Length),
+    JornadaMatches is round(Length / 2), 
+    printMatches(SeasonMatches, JornadaMatches, 0, 0).
 
 % generateSeason(+Teams, +Laps, +LapGeneration, +LastLapMatches, +MatchesAcc, -SeasonMatches)
 % Generates all the matches in a season, according to the teams + lap numbers provided.
@@ -88,12 +104,4 @@ restrictSameLists([],[]):-!.
 restrictSameLists([H1|T1],[H2|T2]):-
     A #= B,
     restrictSameLists(T1,T2).
-
-printMatch(Equipa1,Equipa2,N):-
-    equipa(Equipa1,Nome1),
-    equipa(Equipa2,Nome2),
-    write('Match ') , write(N) , nl,
-    write('Localidade : ') , write(Equipa1) , nl,
-    write('Em casa : ') , write(Equipa1) , nl,
-    write('Fora : ') , write(Equipa2) , nl.
     
