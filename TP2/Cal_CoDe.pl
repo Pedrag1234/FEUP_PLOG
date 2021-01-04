@@ -35,7 +35,9 @@ run(Teams, Laps):-
 % Generates all the matches in a season, according to the teams + lap numbers provided.
 generateSeason(_, 0, _, _, SeasonMatches, SeasonMatches).
 generateSeason(Teams, Laps, first, LastLapMatches, MatchesAcc, SeasonMatches):-
-    generateLap(Teams, LastLapMatches, NewTeams),
+    length(Teams,Size),
+    LapJornadas is Size - 1,
+    generateLap(Teams, LapJornadas, [], LastLapMatches, NewTeams),
     NewLaps is Laps - 1,
     append(MatchesAcc, LastLapMatches, NewMatchesAcc),
     generateSeason(NewTeams, NewLaps, alternate, LastLapMatches, NewMatchesAcc, SeasonMatches).
@@ -47,9 +49,12 @@ generateSeason(Teams, Laps, alternate, LastLapMatches, MatchesAcc, SeasonMatches
     append(MatchesAcc, AlternatedMatches, NewMatchesAcc),
     generateSeason(NewTeams, NewLaps, alternate, AlternatedMatches, NewMatchesAcc, SeasonMatches).
 
-generateLap(Teams, LapMatches,Teams):-
-    validateMatches(Teams,LapMatches),
-    write('Yeet'),nl.
+generateLap(_, 0,  LapMatches, LapMatches, _).
+generateLap(Teams, LapJornadas, MatchesAcc, LapMatches, Teams):-
+    validateMatches(Teams,Matches),
+    append(MatchesAcc,Matches,NewMatchesAcc),
+    NewLapJornadas is LapJornadas - 1,
+    generateLap(Teams, NewLapJornadas, NewMatchesAcc, LapMatches, Teams).
     %restrictSameLists(LapMatches,Matches),
     %NewLapMatches = [LapMatches|Matches].
 
