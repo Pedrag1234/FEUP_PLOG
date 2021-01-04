@@ -64,20 +64,20 @@ generateAlternateLap(Teams, Matches, NewTeams):-
     % add restrictions
     addMatches(Teams, Matches, NewTeams).
 
-countImportantMatches([],_).
-countImportantMatches([MatchesH|MatchesT],Count):-
+countImportantMatches([], Count, Count).
+countImportantMatches([MatchesH|MatchesT], CountAcc, Count):-
     MatchesH = HomeName-AwayName,
-    (( HomeName = 'FCPorto' ; HomeName = 'Benfica' ; HomeName = 'Sporting' ; HomeName = 'SCBraga' ) -> ( NewCount is Count + 1 ; countImportantMatches(MatchesT,NewCount) ); countImportantMatches(MatchesT,Count)).
-
+    (( HomeName = 'FCPorto' ; HomeName = 'Benfica' ; HomeName = 'Sporting' ; HomeName = 'SCBraga' ) -> ( NewCountAcc is CountAcc + 1, countImportantMatches(MatchesT, NewCountAcc, Count) ); countImportantMatches(MatchesT, CountAcc, Count)).
 
 validateMatches(Teams,Matches):-
     length(Teams,Size),
     domain([HomeA,HomeB,HomeC,HomeD,HomeE,HomeF,HomeG,HomeH,HomeI],1,Size),
     domain([AwayA,AwayB,AwayC,AwayD,AwayE,AwayF,AwayG,AwayH,AwayI],1,Size),
     all_distinct([HomeA,HomeB,HomeC,HomeD,HomeE,HomeF,HomeG,HomeH,HomeI,AwayA,AwayB,AwayC,AwayD,AwayE,AwayF,AwayG,AwayH,AwayI]),
-    generateMatches(Teams,[HomeA,HomeB,HomeC,HomeD,HomeE,HomeF,HomeG,HomeH,HomeI],[AwayA,AwayB,AwayC,AwayD,AwayE,AwayF,AwayG,AwayH,AwayI],[],Matches).
-
-
+    generateMatches(Teams,[HomeA,HomeB,HomeC,HomeD,HomeE,HomeF,HomeG,HomeH,HomeI],[AwayA,AwayB,AwayC,AwayD,AwayE,AwayF,AwayG,AwayH,AwayI],[],Matches),
+    countImportantMatches(Matches, 0, Count),
+    write(Count), nl,
+    Count #> 1.
 
 generateMatches(_,[],[],Matches,Matches).
 generateMatches(Teams,[HomeTeamsH|HomeTeamsT],[AwayTeamsH|AwayTeamsT],MatchesAcc,Matches):-
@@ -88,10 +88,6 @@ generateMatches(Teams,[HomeTeamsH|HomeTeamsT],[AwayTeamsH|AwayTeamsT],MatchesAcc
     Match = HomeName-AwayName,
     append(MatchesAcc,[Match],NewMatchesAcc),
     generateMatches(Teams,HomeTeamsT,AwayTeamsT,NewMatchesAcc,Matches).
-
-
-
-    
 
 % generateMatch(+Teams, -Home, -Away)
 % Creates a match between two different teams.
