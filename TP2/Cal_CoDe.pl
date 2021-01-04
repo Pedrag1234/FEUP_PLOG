@@ -44,12 +44,13 @@ generateSeason(Teams, Laps, first, LastLapMatches, MatchesAcc, SeasonMatches, Ne
     generateSeason(TempTeams, NewLaps, alternate, LastLapMatches, NewMatchesAcc, SeasonMatches, NewTeams).
 
 generateSeason(Teams, Laps, alternate, LastLapMatches, MatchesAcc, SeasonMatches, NewTeams):-
-    alternateMatchSides(LastLapMatches, [], AlternatedMatches),
-    generateAlternateLap(Teams, AlternatedMatches, TempTeams),
+    generateAlternateLap(Teams, LastLapMatches, AlternatedMatches, TempTeams),
     NewLaps is Laps - 1,
     append(MatchesAcc, AlternatedMatches, NewMatchesAcc),
     generateSeason(TempTeams, NewLaps, alternate, AlternatedMatches, NewMatchesAcc, SeasonMatches, NewTeams).
 
+% generateLap(+Teams, +LapJornadas, +MatchesAcc, -LapMatches, -NewTeams)
+% Generates all the matches in a lap, depending on the number of teams in the league.
 generateLap(Teams, 0,  LapMatches, LapMatches, Teams).
 generateLap(Teams, LapJornadas, MatchesAcc, LapMatches, NewTeams):-
     validateMatches(Teams, MatchesAcc, Matches),
@@ -58,9 +59,14 @@ generateLap(Teams, LapJornadas, MatchesAcc, LapMatches, NewTeams):-
     NewLapJornadas is LapJornadas - 1,
     generateLap(TempTeams, NewLapJornadas, NewMatchesAcc, LapMatches, NewTeams).
 
-generateAlternateLap(Teams, Matches, NewTeams):-
-    addMatches(Teams, Matches, NewTeams).
+% generateAlternateLap(+Teams, +LastLapMatches, -AlternatedMatches, -NewTeams)
+% Generates all the matches in a lap that occurred after the first lap, repeating the previous lap with changed sides on the matches.
+generateAlternateLap(Teams, LastLapMatches, AlternatedMatches, NewTeams):-
+    alternateMatchSides(LastLapMatches, [], AlternatedMatches),
+    addMatches(Teams, AlternatedMatches, NewTeams).
 
+% countImportantMatches(+Teams, +HomeTeams, +CountAcc, -Count)
+% Counts the amount of matches that occur on the home of a 'big' team
 countImportantMatches(_, [], Count, Count).
 countImportantMatches(Teams, [HomeTeamsH|HomeTeamsT], CountAcc, Count):-
     nth1(HomeTeamsH, Teams, Home),
@@ -68,6 +74,8 @@ countImportantMatches(Teams, [HomeTeamsH|HomeTeamsT], CountAcc, Count):-
     (( HomeName = 'FCPorto' ; HomeName = 'Benfica' ; HomeName = 'Sporting' ; HomeName = 'SCBraga' ) 
     -> ( NewCountAcc is CountAcc + 1, countImportantMatches(Teams, HomeTeamsT, NewCountAcc, Count) ); countImportantMatches(Teams, HomeTeamsT, CountAcc, Count)).
 
+% validateMatches(+Teams, +PreviousMatches, -Matches)
+% Returns a possible weekly set of matches, respecting the restrictions put in place.
 validateMatches(Teams, PreviousMatches, Matches):-
     length(Teams,Size),
     domain([HomeA,HomeB,HomeC,HomeD,HomeE,HomeF,HomeG,HomeH,HomeI],1,Size),
@@ -78,6 +86,8 @@ validateMatches(Teams, PreviousMatches, Matches):-
     checkPreviousMatches(Teams, PreviousMatches, [HomeA,HomeB,HomeC,HomeD,HomeE,HomeF,HomeG,HomeH,HomeI], [AwayA,AwayB,AwayC,AwayD,AwayE,AwayF,AwayG,AwayH,AwayI]),
     generateMatches(Teams,[HomeA,HomeB,HomeC,HomeD,HomeE,HomeF,HomeG,HomeH,HomeI],[AwayA,AwayB,AwayC,AwayD,AwayE,AwayF,AwayG,AwayH,AwayI],[],Matches).
 
+% checkPreviousMatches(+Teams, +PreviousMatches, +HomeTeams, +AwayTeams)
+% Checks to see if the chosen set of teams respects the restrictions put in place (alternating sides every weekly set of games + not playing a match that has been already played before).
 checkPreviousMatches(_, _, [], []).
 checkPreviousMatches(Teams, PreviousMatches, [HomeTeamsH|HomeTeamsT], [AwayTeamsH|AwayTeamsT]):-
     nth1(HomeTeamsH, Teams, Home),
@@ -89,11 +99,15 @@ checkPreviousMatches(Teams, PreviousMatches, [HomeTeamsH|HomeTeamsT], [AwayTeams
     checkPreviousOpponents(PreviousMatches, HomeName, AwayName),
     checkPreviousMatches(Teams, PreviousMatches, HomeTeamsT, AwayTeamsT).
 
+% checkPreviousOpponents(+PreviousMatches, +HomeName, +AwayName)
+% Checks to see if the two given teams have already played in the past matches.
 checkPreviousOpponents([], _, _).
 checkPreviousOpponents([Match|PreviousMatchesT], HomeName, AwayName):-
     Match \== HomeName-AwayName, Match \== AwayName-HomeName,
     checkPreviousOpponents(PreviousMatchesT, HomeName, AwayName).
 
+% generateMatches(+Teams, +HomeTeams, +AwayTeams, +MatchesAcc, -Matches)
+% Generates a weekly set of matches, with the given teams staying at home/going away.
 generateMatches(_,[],[],Matches,Matches).
 generateMatches(Teams,[HomeTeamsH|HomeTeamsT],[AwayTeamsH|AwayTeamsT],MatchesAcc,Matches):-
     nth1(HomeTeamsH, Teams, Home),
