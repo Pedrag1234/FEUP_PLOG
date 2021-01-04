@@ -7,6 +7,8 @@ teams(['FCPorto'-'Porto'-0-0, 'Benfica'-'Lisboa'-0-0, 'Sporting'-'Lisboa'-0-0, '
        'PacosDeFerreira'-'PacosDeFerreira'-0-0, 'Nacional'-'Funchal'-0-0, 'RioAve'-'VilaDoConde'-0-0, 'Tondela'-'Tondela'-0-0,
        'VitoriaDeGuimaraes'-'Guimaraes'-0-0, 'SantaClara'-'PontaDelgada'-0-0, 'Portimonense'-'Portimao'-0-0, 'Moreirense'-'MoreiraDeConegos'-0-0]).
 
+% printMatches(+Matches, +JornadaMatches, +CurrentMatch, +Jornada)
+% Writes the list of matches on the screen, grouped by each weekly set of games.
 printMatches([], _, _, _).
 printMatches(Matches, JornadaMatches, JornadaMatches, Jornada):-
     NewJornada is Jornada + 1,
@@ -21,6 +23,8 @@ printMatches([Match|MatchT], JornadaMatches, CurrentMatch, Jornada):-
     NewCurrentMatch is CurrentMatch + 1,
     printMatches(MatchT, JornadaMatches, NewCurrentMatch, Jornada).
 
+% run(+Teams, +Laps)
+% Starts the program, generating a football season calendar.
 run(Teams, Laps):-
     generateSeason(Teams, Laps, first, _, [], SeasonMatches),
     length(Teams, Length),
@@ -65,11 +69,15 @@ generateMatches(Teams,[MatchesH|MatchesT]):-
     MatchesH = Match,
     generateMatches(NewTeams , MatchesT).
 
-generateMatch(Teams, Home,Away):-
+% generateMatch(+Teams, -Home, -Away)
+% Creates a match between two different teams.
+generateMatch(Teams, Home, Away):-
     nth0(N1, Teams, Home),
     nth0(N2, Teams, Away),
     N1 \== N2.
 
+% alternateMatchSides(+Matches, +MatchesAcc, -AlternatedMatches)
+% With a given list of matches, returns another list with the same matches but with the team sides reversed.
 alternateMatchSides([], AlternatedMatches, AlternatedMatches).
 alternateMatchSides([Match|MatchT], MatchesAcc, AlternatedMatches):-
     Match = HomeTeam-AwayTeam,
@@ -77,11 +85,15 @@ alternateMatchSides([Match|MatchT], MatchesAcc, AlternatedMatches):-
     append(MatchesAcc, [AlternateMatch], NewMatchesAcc),
     alternateMatchSides(MatchT, NewMatchesAcc, AlternatedMatches).
 
+% addMatches(+Teams, +Matches, -NewTeams)
+% Saves the given list of matches' occurrence on each team's record.
 addMatches(NewTeams, [], NewTeams).
 addMatches(Teams, [Match|MatchT], NewTeams):-
     addMatch(Teams, Match, [], TempTeams),
     addMatches(TempTeams, MatchT, NewTeams).
 
+% addMatch(+Teams, +Match, +TeamsAcc, -NewTeams)
+% Searches for the teams that participated in a given match, and saves the given match on their record.
 addMatch([], _, TeamsAcc, TeamsAcc).
 addMatch([Team|T], Match, TeamsAcc, NewTeams):-
     Match = HomeTeam-AwayTeam,
